@@ -19,9 +19,9 @@ export function mapPancakeVariationToProduct(raw: Record<string, unknown>): Resu
 
   return ok({
     id: productId,
-    name: readString(raw, "product_name") ?? readString(raw, "name") ?? variant.data.name,
-    sku: readString(raw, "product_sku") ?? readString(raw, "sku"),
-    description: readString(raw, "description"),
+    name: readString(raw, "product_name") ?? readNestedString(raw, ["product", "name"]) ?? variant.data.name,
+    sku: readString(raw, "product_sku") ?? readNestedString(raw, ["product", "display_id"]) ?? readString(raw, "display_id"),
+    description: readString(raw, "description") ?? readNestedString(raw, ["product", "note_product"]),
     source: "pancake_pos",
     variants: [variant.data],
     updatedAt: readString(raw, "updated_at") ?? readString(raw, "modified_at")
@@ -39,7 +39,10 @@ export function mapPancakeVariation(raw: Record<string, unknown>, productId: str
     }));
   }
 
-  const variantName = readString(raw, "variation_name") ?? readString(raw, "name");
+  const productName = readString(raw, "product_name") ?? readNestedString(raw, ["product", "name"]);
+  const size = readString(raw, "size") ?? readVariationField(raw, "Size") ?? readVariationField(raw, "Kích thước");
+  const color = readString(raw, "color") ?? readVariationField(raw, "Màu") ?? readVariationField(raw, "Color");
+  const variantName = readString(raw, "variation_name") ?? readString(raw, "name") ?? buildVariantName(productName, color, size);
   if (variantName === undefined) {
     return fail(createAppError({
       code: "POS_PRODUCT_NOT_FOUND",
@@ -52,12 +55,12 @@ export function mapPancakeVariation(raw: Record<string, unknown>, productId: str
   return ok({
     id: variantId,
     productId,
-    sku: readString(raw, "variation_sku") ?? readString(raw, "sku"),
+    sku: readString(raw, "variation_sku") ?? readString(raw, "sku") ?? readString(raw, "display_id") ?? readString(raw, "barcode"),
     name: variantName,
-    size: readString(raw, "size") ?? readNestedString(raw, ["fields", "size"]),
-    color: readString(raw, "color") ?? readNestedString(raw, ["fields", "color"]),
+    size,
+    color,
     price: readNumber(raw, "retail_price") ?? readNumber(raw, "price"),
-    imageUrl: readString(raw, "image") ?? readString(raw, "image_url"),
+    imageUrl: readString(raw, "image") ?? readString(raw, "image_url") ?? readFirstString(raw, "images"),
     raw
   });
 }
@@ -135,4 +138,47 @@ function readNestedString(source: Record<string, unknown>, path: readonly string
   }
 
   return typeof current === "string" && current.trim() !== "" ? current : undefined;
+}
+
+function readFirstString(source: Record<string, unknown>, key: string): string | undefined {
+  const value = source[key];
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const first = value.find((item) => typeof item === "string" && item.trim() !== "");
+  return typeof first === "string" ? first : undefined;
+}
+
+function readVariationField(source: Record<string, unknown>, fieldName: string): string | undefined {
+  const fields = source.fields;
+  if (!Array.isArray(fields)) {
+    return undefined;
+  }
+
+  const field = fields.find((item) => {
+    if (item === null || typeof item !== "object") {
+      return false;
+    }
+
+    const record = item as Record<string, unknown>;
+    return typeof record.name === "string" && record.name.toLowerCase() === fieldName.toLowerCase();
+  });
+
+  if (field === undefined || field === null || typeof field !== "object") {
+    return undefined;
+  }
+
+  const record = field as Record<string, unknown>;
+  const value = record.value ?? record.keyValue;
+  return typeof value === "string" && value.trim() !== "" ? value : undefined;
+}
+
+function buildVariantName(productName: string | undefined, color: string | undefined, size: string | undefined): string | undefined {
+  if (productName === undefined) {
+    return undefined;
+  }
+
+  const parts = [productName, color, size].filter((item): item is string => item !== undefined && item.trim() !== "");
+  return parts.length > 0 ? parts.join(" - ") : undefined;
 }

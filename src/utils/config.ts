@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { LogLevel } from "./logger";
 
 export type NodeEnv = "development" | "test" | "production";
@@ -43,7 +45,7 @@ type EnvRecord = Record<string, string | undefined>;
 const DEFAULT_BOTCAKE_API_BASE_URL = "https://botcake.io/api/public_api/v1";
 const DEFAULT_PANCAKE_POS_API_BASE_URL = "https://pos.pages.fm/api/v1";
 
-export function loadConfig(env: EnvRecord = process.env): AppConfig {
+export function loadConfig(env: EnvRecord = loadRuntimeEnv()): AppConfig {
   return {
     env: parseNodeEnv(env.NODE_ENV),
     logLevel: parseLogLevel(env.LOG_LEVEL),
@@ -68,6 +70,14 @@ export function loadConfig(env: EnvRecord = process.env): AppConfig {
       enableDraftOrderCreation: parseBoolean(env.ENABLE_POS_DRAFT_ORDER, false),
       safeDraftStatuses: parseNumberList(env.PANCAKE_POS_SAFE_DRAFT_STATUSES)
     }
+  };
+}
+
+export function loadRuntimeEnv(envFilePath = resolve(process.cwd(), ".env")): EnvRecord {
+  const fileEnv = readDotEnvFile(envFilePath);
+  return {
+    ...fileEnv,
+    ...process.env
   };
 }
 
@@ -162,4 +172,42 @@ function parseLogLevel(value: string | undefined): LogLevel {
   }
 
   return "info";
+}
+
+function readDotEnvFile(envFilePath: string): EnvRecord {
+  if (!existsSync(envFilePath)) {
+    return {};
+  }
+
+  const content = readFileSync(envFilePath, "utf8");
+  const output: EnvRecord = {};
+
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (line === "" || line.startsWith("#")) {
+      continue;
+    }
+
+    const separatorIndex = line.indexOf("=");
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    const key = line.slice(0, separatorIndex).trim();
+    const value = line.slice(separatorIndex + 1).trim();
+    output[key] = stripOptionalQuotes(value);
+  }
+
+  return output;
+}
+
+function stripOptionalQuotes(value: string): string {
+  if (
+    (value.startsWith("\"") && value.endsWith("\"")) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1);
+  }
+
+  return value;
 }
