@@ -80,8 +80,8 @@ npm run check
 Lệnh này bao gồm:
 
 - TypeScript strict typecheck.
-- Unit tests.
 - Build source.
+- Doctor kiểm tra cấu hình, prompt và khóa an toàn.
 
 ## 5. Khi nào được bật tạo đơn nháp
 
@@ -138,6 +138,7 @@ Mỗi lần cập nhật:
 - [ ] `.env` đã có Pancake POS credentials thật.
 - [ ] `npm run doctor` không có `[FAIL]`.
 - [ ] `npm run check` pass.
+- [ ] Repo không có file code test/mock/demo trong source production.
 - [ ] Knowledge Base đã có sản phẩm, size, chính sách thật.
 - [ ] Sale đã hiểu các tag handoff.
 - [ ] Đã test luồng đọc sản phẩm/tồn kho với dữ liệu thật.

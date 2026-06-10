@@ -698,34 +698,35 @@ INVENTORY_CACHE_TTL_SECONDS=
 
 Không commit file `.env` thật lên GitHub.
 
-## 14. Testing Strategy
+## 14. Quality Gate & Real-Data Verification
 
-### 14.1 Unit tests bắt buộc
+Theo yêu cầu vận hành production-only, repo không chứa file code test/mock/demo trong source chính. Chất lượng được kiểm soát bằng các lớp sau:
 
-- Handoff rule engine:
-  - Khách muốn mua -> `Sẵn sàng chốt đơn`.
-  - Khách đòi gặp người thật -> `Cần sale hỗ trợ`.
-  - Tồn kho unknown -> `Cần sale hỗ trợ`.
-  - Khiếu nại -> `Cần sale hỗ trợ`.
-- Handoff summary formatter đúng mẫu.
-- Redaction phone/token/address.
-- API error mapper.
-- State transition validator.
+### 14.1 Static quality gate
 
-### 14.2 Integration tests khi có API docs thật
+- `npm run typecheck`: TypeScript strict, không cho lỗi type lọt qua.
+- `npm run build`: xác nhận source build được.
+- `npm run doctor`: kiểm tra prompt, cấu hình, credentials và khóa an toàn.
+- Secret scan trước khi commit: không để API key/token thật trong GitHub.
 
-- Verify webhook signature.
-- Parse webhook payload Botcake mẫu.
-- Send content sandbox/staging.
-- Query product/variant/inventory từ Pancake POS sandbox/staging.
-- Create draft order sandbox/staging, xác nhận không tự chốt đơn.
+### 14.2 Real-data verification khi có credentials thật
 
-### 14.3 Contract tests
+- Verify webhook signature hoặc lớp bảo vệ webhook được cấu hình đúng.
+- Capture payload Botcake thật và map vào internal message event.
+- Gửi `send_content` tới `psid` nội bộ do shop cung cấp.
+- Query product/variant/inventory từ Pancake POS shop thật.
+- Kiểm tra mapper Pancake POS product -> `Product`.
+- Kiểm tra mapper Pancake POS inventory -> `InventorySnapshot`.
+- Chỉ kiểm tra tạo đơn nháp sau khi đã xác minh status draft an toàn và dùng khách nội bộ.
+- Xác nhận AI không tự chốt đơn hoàn tất.
 
-- Mapper Botcake payload -> internal message event.
-- Mapper Pancake POS product -> `Product`.
-- Mapper Pancake POS inventory -> `InventorySnapshot`.
-- Mapper draft order response -> `DraftOrderContext`.
+### 14.3 Manual audit bắt buộc trước production
+
+- Handoff rule engine đúng với `docs/handoff-protocol.md`.
+- Handoff summary đúng mẫu.
+- Logger không in phone/token/address/API key.
+- API error mapper không làm AI nói chắc khi POS/Botcake lỗi.
+- State transition không cho AI chuyển thẳng sang trạng thái chốt đơn hoàn tất.
 
 ## 15. Những điểm cần xác minh thêm
 
@@ -761,4 +762,3 @@ Cần kiểm tra tài liệu chính thức tại `https://docs.pancake.biz/pos/`
 - Đã có chính sách cửa hàng thật: đổi trả, giao hàng, thanh toán.
 - Đã thống nhất tag trong Botcake: "Sẵn sàng chốt đơn", "Cần sale hỗ trợ", "Đã tạo đơn nháp".
 - Đã thống nhất quy trình sale nhận handoff và xử lý tiếp.
-
