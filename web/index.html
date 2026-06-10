@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Sales Automation</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Điều hướng">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">AI</div>
+          <div>
+            <div class="brand-name">Sales Control</div>
+            <div class="brand-caption">Pancake Ecosystem</div>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Dashboard sections">
+          <a class="nav-item is-active" href="#overview">Tổng quan</a>
+          <a class="nav-item" href="#queue">Handoff</a>
+          <a class="nav-item" href="#integrations">Kết nối</a>
+          <a class="nav-item" href="#knowledge">Knowledge Base</a>
+          <a class="nav-item" href="#guides">Lấy thông tin API</a>
+        </nav>
+
+        <div class="sidebar-status">
+          <span class="status-dot status-warn"></span>
+          <span id="sidebar-status-text">Đang kiểm tra cấu hình</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">AI Sales Automation Hub</p>
+            <h1>Trung tâm vận hành tư vấn và chốt đơn an toàn</h1>
+          </div>
+          <div class="topbar-actions">
+            <a class="button button-secondary" href="/api/readiness" target="_blank" rel="noreferrer">Xem readiness JSON</a>
+            <button class="button button-primary" id="refresh-button" type="button">Kiểm tra lại</button>
+          </div>
+        </header>
+
+        <section class="overview-band" id="overview" aria-label="Readiness overview">
+          <div class="readiness-summary">
+            <div>
+              <p class="section-kicker">Trạng thái hệ thống</p>
+              <h2 id="overall-title">Đang kiểm tra</h2>
+              <p id="overall-message">Dashboard đang đọc cấu hình thật từ backend.</p>
+            </div>
+            <div class="readiness-pill" id="overall-pill">CHECKING</div>
+          </div>
+          <div class="metric-grid" id="metric-grid">
+            <article class="metric">
+              <span class="metric-label">Tin nhắn khách</span>
+              <strong>Chưa có dữ liệu</strong>
+              <small>Cần webhook Botcake thật</small>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Tồn kho POS</span>
+              <strong>Chưa kết nối</strong>
+              <small>Cần API key và Shop ID</small>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Handoff</span>
+              <strong>Sẵn sàng logic</strong>
+              <small>Chờ tag/flow thật</small>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Đơn nháp</span>
+              <strong>An toàn</strong>
+              <small>Đang tắt theo mặc định</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="content-grid">
+          <section class="panel" id="queue">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Handoff queue</p>
+                <h2>Khách cần sale xử lý</h2>
+              </div>
+              <span class="badge badge-muted">Chờ webhook thật</span>
+            </div>
+            <div class="empty-state">
+              <div class="empty-icon">H</div>
+              <h3>Chưa có hội thoại thật</h3>
+              <p>Khi Botcake webhook được cấu hình, danh sách khách cần sale hỗ trợ sẽ xuất hiện tại đây theo tag và rule an toàn.</p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Safety gate</p>
+                <h2>Kiểm tra trước production</h2>
+              </div>
+              <span class="badge" id="safety-badge">Đang đọc</span>
+            </div>
+            <div class="status-list" id="readiness-list"></div>
+          </section>
+        </section>
+
+        <section class="panel wide-panel" id="integrations">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">Integrations</p>
+              <h2>Pancake, Pancake POS và Botcake</h2>
+            </div>
+            <span class="badge badge-muted">Không hiển thị secret</span>
+          </div>
+          <div class="integration-grid" id="integration-grid">
+            <article class="integration-card" data-service="botcake">
+              <div class="integration-top">
+                <div class="service-mark botcake-mark">B</div>
+                <div>
+                  <h3>Botcake</h3>
+                  <p>Nhận/gửi tin, tag, flow, handoff.</p>
+                </div>
+              </div>
+              <div class="service-state" id="botcake-state">Đang kiểm tra</div>
+            </article>
+            <article class="integration-card" data-service="pancake-pos">
+              <div class="integration-top">
+                <div class="service-mark pos-mark">P</div>
+                <div>
+                  <h3>Pancake POS</h3>
+                  <p>Sản phẩm, biến thể, tồn kho, đơn nháp.</p>
+                </div>
+              </div>
+              <div class="service-state" id="pos-state">Đang kiểm tra</div>
+            </article>
+            <article class="integration-card" data-service="draft-order">
+              <div class="integration-top">
+                <div class="service-mark draft-mark">D</div>
+                <div>
+                  <h3>Draft Order</h3>
+                  <p>Chỉ bật sau khi xác minh status an toàn.</p>
+                </div>
+              </div>
+              <div class="service-state" id="draft-state">Đang kiểm tra</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="content-grid">
+          <section class="panel" id="knowledge">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Knowledge Base</p>
+                <h2>Dữ liệu cần nhập thật</h2>
+              </div>
+            </div>
+            <div class="checklist">
+              <label><input type="checkbox" disabled /> Sản phẩm, SKU, size, màu, giá từ Pancake POS</label>
+              <label><input type="checkbox" disabled /> Bảng size chính thức</label>
+              <label><input type="checkbox" disabled /> Chính sách đổi trả, vận chuyển, thanh toán</label>
+              <label><input type="checkbox" disabled /> Objection thường gặp và kịch bản tư vấn</label>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Follow-up</p>
+                <h2>Chăm sóc lại khách</h2>
+              </div>
+              <span class="badge badge-muted">Giai đoạn sau</span>
+            </div>
+            <div class="workflow-list">
+              <div class="workflow-item">
+                <span>1</span>
+                <p>Nhận biết khách im lặng sau tư vấn.</p>
+              </div>
+              <div class="workflow-item">
+                <span>2</span>
+                <p>Gắn tag theo trạng thái và chính sách từng kênh.</p>
+              </div>
+              <div class="workflow-item">
+                <span>3</span>
+                <p>Kích hoạt Botcake Flow/Automation khi được cấu hình thật.</p>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel wide-panel" id="guides">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">Connection guide</p>
+              <h2>Lấy thông tin ở đâu</h2>
+            </div>
+            <span class="badge badge-muted">Theo tài liệu đã xác minh</span>
+          </div>
+          <div class="guide-grid">
+            <article class="guide-card">
+              <h3>Botcake</h3>
+              <ol>
+                <li>Lấy `BOTCAKE_PAGE_ID` từ page/bot đang dùng trong Botcake.</li>
+                <li>Lấy `BOTCAKE_API_TOKEN` trong khu vực Developer/API của Botcake admin.</li>
+                <li>Dùng header `access-token` khi gọi Public API.</li>
+                <li>Dùng `GET /pages/{page_id}/get_list_tag` để lấy tag ID.</li>
+                <li>Dùng `POST /pages/{page_id}/flows/send_content` và `send_flow` để gửi tin/flow.</li>
+              </ol>
+              <p class="guide-note">Vị trí lấy token trong giao diện Botcake cần xác minh trực tiếp trên tài khoản của anh.</p>
+            </article>
+            <article class="guide-card">
+              <h3>Pancake POS</h3>
+              <ol>
+                <li>Vào Cấu hình → Nâng cao → Kết nối bên thứ 3 → Webhook/API.</li>
+                <li>Tạo `PANCAKE_POS_API_KEY`.</li>
+                <li>Gọi `GET /shops` để lấy `PANCAKE_POS_SHOP_ID`.</li>
+                <li>Gọi `GET /shops/{SHOP_ID}/warehouses` để lấy warehouse ID.</li>
+                <li>Gọi `GET /products/variations` để lấy sản phẩm và biến thể.</li>
+              </ol>
+              <p class="guide-note">Pancake POS dùng `api_key` dạng query theo OpenAPI hiện tại.</p>
+            </article>
+            <article class="guide-card">
+              <h3>Trước khi bật thật</h3>
+              <ol>
+                <li>Chạy `npm run doctor` và xử lý mọi `[FAIL]`.</li>
+                <li>Capture webhook thật từ Botcake.</li>
+                <li>Kiểm tra sản phẩm/tồn kho thật từ POS.</li>
+                <li>Không bật đơn nháp nếu chưa xác minh status draft.</li>
+                <li>Không commit `.env` lên GitHub.</li>
+              </ol>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

@@ -15,7 +15,7 @@ Mức sẵn sàng hiện tại:
 | Botcake live integration | 25% | Có client API, nhưng thiếu credentials, webhook payload thật, tag/flow IDs thật |
 | Pancake POS live integration | 30% | Có client endpoint chính, nhưng thiếu API key/shop/warehouse và chưa xác minh draft status |
 | AI tư vấn với dữ liệu thật | 20% | Có prompt/rule, nhưng Knowledge Base chưa có sản phẩm/chính sách thật |
-| Vận hành cho người không rành code | 45% | Có doctor/runbook, nhưng chưa có UI/dashboard và chưa có deploy thật |
+| Vận hành cho người không rành code | 58% | Có doctor/runbook và dashboard readiness nội bộ; chưa có dữ liệu hội thoại live |
 | Sẵn sàng production tổng thể | 35% | Chưa có kết nối thật, dữ liệu thật, webhook thật, UI/admin và monitoring production |
 
 ## 2. Những phần đã đúng theo yêu cầu
@@ -63,7 +63,7 @@ Mức sẵn sàng hiện tại:
 
 - Chưa có public webhook server.
 - Chưa có database lưu conversation state/idempotency.
-- Chưa có dashboard UI cho sale/admin.
+- Đã có dashboard readiness nội bộ; chưa có dữ liệu hội thoại live vì chưa có webhook/database.
 - Chưa có monitoring/cảnh báo bỏ sót khách.
 - Chưa có lịch follow-up/remarketing theo chính sách từng kênh.
 

@@ -31,6 +31,7 @@ ai-sales-automation/
 │   ├── handoff-protocol.md
 │   ├── sales-prompt.md
 │   ├── technical-specification.md
+│   ├── ui-and-connection-research.md
 │   └── implementation-plan.md
 ├── src/
 │   ├── botcake/
@@ -39,6 +40,10 @@ ai-sales-automation/
 │   └── utils/
 ├── prompts/
 │   └── system-prompt.txt
+├── web/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
 ├── .env.example
 ├── package.json
 ├── tsconfig.json
@@ -52,6 +57,7 @@ ai-sales-automation/
 - Đã có project Node.js TypeScript strict.
 - Đã có `.env.example` để cấu hình Botcake/Pancake POS mà không hardcode secret.
 - Đã có contracts, logger redaction, HTTP client timeout/retry, Botcake/Pancake POS adapter khung, AI handoff rules và doctor kiểm tra vận hành.
+- Đã có dashboard UI nội bộ để xem readiness, kết nối Botcake/POS, handoff queue trống an toàn và hướng dẫn lấy thông tin API.
 - Repo production hiện không chứa thư mục/file code test.
 - Chưa có public API server/webhook endpoint production.
 - Chưa bật tạo đơn nháp production. `ENABLE_POS_DRAFT_ORDER=false` theo mặc định cho tới khi xác minh trạng thái draft an toàn trong Pancake POS.
@@ -76,12 +82,14 @@ npm install
 npm run doctor
 npm run check
 npm run typecheck
+npm run dev
 ```
 
 Trong đó:
 
 - `npm run doctor`: kiểm tra cấu hình, prompt và khóa an toàn theo cách dễ đọc cho người vận hành.
 - `npm run check`: chạy typecheck, build và doctor trước khi commit/deploy.
+- `npm run dev`: mở backend UI server tại `http://localhost:3000`.
 - Nếu `doctor` báo `[FAIL]`, không deploy production.
 
 Tài liệu vận hành cho chủ dự án: `docs/owner-runbook.md`.

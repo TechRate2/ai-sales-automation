@@ -24,6 +24,7 @@ Tài liệu này dành cho người không rành code nhưng cần kiểm soát 
 | `docs/pancake-pos-api.md` | Quy tắc tích hợp Pancake POS |
 | `docs/handoff-protocol.md` | Quy tắc chuyển sale |
 | `prompts/system-prompt.txt` | Prompt chính cho AI Chị Hương |
+| `web/` | Dashboard nội bộ cho người vận hành |
 
 ## 3. Thiết lập lần đầu
 
@@ -83,6 +84,18 @@ Lệnh này bao gồm:
 - Build source.
 - Doctor kiểm tra cấu hình, prompt và khóa an toàn.
 
+Mở dashboard nội bộ:
+
+```bash
+npm run dev
+```
+
+Sau đó mở:
+
+```text
+http://localhost:3000
+```
+
 ## 5. Khi nào được bật tạo đơn nháp
 
 Chỉ bật khi đã có đủ các điều kiện sau:
@@ -122,7 +135,7 @@ Mỗi lần cập nhật:
 - Chưa gửi tin nhắn thật cho khách nếu chưa có Botcake credentials.
 - Chưa đọc dữ liệu POS thật nếu chưa có Pancake POS credentials.
 - Chưa tạo đơn nháp thật.
-- Chưa có dashboard UI cho sale/admin.
+- Đã có dashboard readiness nội bộ; chưa có dữ liệu hội thoại live vì chưa bật webhook/database.
 - Chưa có automation remarketing/follow-up thật.
 
 ## 8. Quy tắc khi có lỗi trong lúc chạy thật
