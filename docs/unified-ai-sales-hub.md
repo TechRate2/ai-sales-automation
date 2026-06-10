@@ -20,8 +20,8 @@ Nguyên tắc quan trọng: **Pancake ecosystem vẫn là hạ tầng chính**, 
 | Nguồn | Vai trò trong dự án | Kết luận thiết kế |
 | --- | --- | --- |
 | Pancake POS Open API: `https://api-docs.pancake.vn/` | Sản phẩm, biến thể, kho, đơn hàng | POS là nguồn dữ liệu chuẩn cho giá/tồn kho/variant/order. Không tự tạo dữ liệu sản phẩm trong AI. |
-| Pancake Docs - Pancake API: `https://docs.pancake.biz/pancake/st-f12/st-p1?lang=en` | Tin nhắn, hội thoại và các thao tác trong Pancake | Có thể dùng Pancake làm nguồn hội thoại/timeline nếu API chi tiết được cấp quyền đầy đủ. Cần xác minh endpoint cụ thể trước khi code. |
-| Pancake Docs - Webhooks: `https://docs.pancake.biz/pancake/st-f12/st-p2?lang=en` | Đồng bộ sự kiện real-time | Cần webhook public HTTPS để nhận event và cập nhật state. |
+| Pancake Docs - Pancake API: `https://docs.pancake.biz/pancake/st-f12/st-p1?lang=en` + `https://developer.pancake.biz/` | Page, hội thoại, message, customer, tag, user, statistics | Pancake API là nguồn chính cho Unified Inbox và page discovery. Có `GET /pages`, conversations, messages, tags, customers. |
+| Pancake Docs - Webhooks: `https://docs.pancake.biz/pancake/st-f12/st-p2?lang=en` + `https://developer.pancake.biz/webhook` | Đồng bộ sự kiện real-time | Có event `messaging`, `subscription`, `post`; endpoint phải trả `200` nhanh để tránh suspension. |
 | Botcake API References: `https://docs.pancake.biz/botcake/st-f7/st-p2?lang=vi` | Gửi nội dung, flow, tag theo Botcake Public API | Botcake là kênh chatbot/automation chính. Source đang dùng `access-token` và route theo `page_id`. |
 | Botcake Dynamic Block Docs: `https://docs.pancake.biz/botcake/st-f7/st-p1?lang=vi` | Message blocks, quick replies, action/tag | Dùng cho kịch bản trả lời động và tag/handoff trong Botcake Flow. |
 
@@ -32,18 +32,21 @@ Nguyên tắc quan trọng: **Pancake ecosystem vẫn là hạ tầng chính**, 
 | Pancake POS Shop ID | Có | Gọi `GET /shops` bằng `PANCAKE_POS_API_KEY`, sau đó chọn shop thật. Source đã kiểm tra được shop thật local. |
 | Pancake POS Warehouse ID | Có | Gọi `GET /shops/{SHOP_ID}/warehouses`, chọn kho mặc định để tư vấn tồn kho. |
 | Botcake Page ID | Chưa thấy endpoint public chính thức để list toàn bộ page trong tài liệu đã mở | Botcake Public API dùng `page_id` trong URL. Source đã hỗ trợ tự suy ra Page ID từ `BOTCAKE_API_TOKEN` nếu token là JWT có field `id`; vẫn nên xác minh page/bot trên giao diện Botcake. |
-| Pancake page/channel IDs | Cần xác minh thêm | Pancake Docs có mục API cho messages/conversations, nhưng cần API list chi tiết và quyền tài khoản trước khi code auto-discovery. |
+| Pancake page/channel IDs | Có với Pancake User Access Token | Gọi `GET https://pages.fm/api/v1/pages?access_token=...`, sau đó có thể generate `page_access_token` nếu user là admin page. |
 
-Kết luận: với POS có thể tự động hóa khá tốt. Với Botcake, hiện thiết kế tốt nhất là **nhập token trước, tự suy ra Page ID nếu được, sau đó kiểm tra lại bằng API tag thật**.
+Kết luận: với POS và Pancake API có thể tự động hóa discovery khá tốt. Với Botcake, hiện thiết kế tốt nhất là **nhập token trước, tự suy ra Page ID nếu được, sau đó kiểm tra lại bằng API tag thật**.
+
+Chi tiết Pancake API/Webhooks được tách trong `docs/pancake-api.md`. Workflow sản phẩm đầy đủ được tách trong `docs/automation-workflow-blueprint.md`.
 
 ## 4. Kiến trúc sản phẩm hoàn chỉnh
 
 ```mermaid
 flowchart LR
-  Customer["Khách hàng / Comment / Inbox"] --> Pancake["Pancake / Botcake Channels"]
-  Pancake --> Webhook["Webhook Receiver"]
+  Customer["Khách hàng / Comment / Inbox"] --> Pancake["Pancake Channels"]
+  Pancake --> Webhook["Pancake Webhook Receiver"]
   Webhook --> State["Conversation State DB"]
   State --> Intent["AI Intent + Lead Scoring"]
+  PancakeApi["Pancake API"] --> State
   POS["Pancake POS API"] --> Catalog["Product + Inventory Engine"]
   KB["Knowledge Base thật"] --> Catalog
   Catalog --> AI["AI Sales Agent"]
@@ -64,7 +67,8 @@ flowchart LR
 | Module | Chức năng | Dữ liệu đầu vào | Kết quả |
 | --- | --- | --- | --- |
 | Integration Discovery | Kiểm tra token, shop, kho, tag, flow | `.env`, Botcake, POS | Dashboard báo kết nối thật, thiếu gì chỉ rõ |
-| Webhook Receiver | Nhận event hội thoại real-time | Pancake/Botcake webhook | Chuẩn hóa event, chống duplicate, đưa vào state |
+| Pancake API Connector | Page discovery, conversations, messages, customers, tags | Pancake User/Page Access Token | Unified Inbox, customer timeline, tag state |
+| Webhook Receiver | Nhận event hội thoại real-time | Pancake webhook messaging, Botcake webhook nếu xác minh | Chuẩn hóa event, chống duplicate, đưa vào state |
 | Conversation State | Lưu trạng thái từng khách | message, intent, tag, đơn nháp | Biết khách đang hỏi gì, đã tư vấn gì, cần nhắc lại lúc nào |
 | Product Knowledge Engine | Tìm sản phẩm đúng nhu cầu | POS product/variant/inventory + Knowledge Base | Gợi ý sản phẩm có hàng, đúng size/màu/giá |
 | AI Sales Agent | Trả lời và tư vấn bán hàng | prompt, state, sản phẩm thật | Tin nhắn tự nhiên, đúng giọng Chị Hương, không bịa |
@@ -125,8 +129,9 @@ Màn hình cần có:
 
 ### Phase B - Webhook và state
 
+- Thêm Pancake API connector cho page, conversation, message, customer, tag.
 - Tạo webhook HTTPS public.
-- Capture payload thật từ Pancake/Botcake.
+- Capture payload thật từ Pancake webhook `messaging`; Botcake inbound webhook chỉ dùng khi xác minh được schema.
 - Lưu conversation state, idempotency, customer profile.
 - Chống duplicate/retry webhook.
 

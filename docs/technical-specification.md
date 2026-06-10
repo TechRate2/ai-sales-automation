@@ -687,6 +687,12 @@ BOTCAKE_API_TOKEN=
 BOTCAKE_WEBHOOK_SECRET=
 BOTCAKE_API_BASE_URL=
 
+PANCAKE_API_USER_ACCESS_TOKEN=
+PANCAKE_API_PAGE_ACCESS_TOKEN=
+PANCAKE_API_PAGE_ID=
+PANCAKE_API_BASE_URL=
+PANCAKE_API_V2_BASE_URL=
+
 PANCAKE_POS_SHOP_ID=
 PANCAKE_POS_API_KEY=
 PANCAKE_POS_DEFAULT_WAREHOUSE_ID=
@@ -700,6 +706,8 @@ INVENTORY_CACHE_TTL_SECONDS=
 Ghi chú:
 
 - `BOTCAKE_PAGE_ID` có thể để trống nếu `BOTCAKE_API_TOKEN` là page token dạng JWT có field `id`; backend sẽ suy ra và ghi `pageIdSource = "token"`.
+- `PANCAKE_API_USER_ACCESS_TOKEN` dùng cho page discovery qua Pancake API `GET /pages`.
+- `PANCAKE_API_PAGE_ACCESS_TOKEN` dùng cho conversations/messages/tags/customers của Pancake API.
 - `PANCAKE_POS_SHOP_ID` lấy bằng `GET /shops`.
 - `PANCAKE_POS_DEFAULT_WAREHOUSE_ID` lấy bằng `GET /shops/{SHOP_ID}/warehouses`.
 

@@ -21,9 +21,11 @@ Tài liệu này dành cho người không rành code nhưng cần kiểm soát 
 | `README.md` | Tổng quan project và lệnh kiểm tra |
 | `docs/knowledge-base.md` | Dữ liệu sản phẩm/chính sách đã được xác nhận |
 | `docs/botcake-capabilities.md` | Quy tắc tích hợp Botcake |
+| `docs/pancake-api.md` | Quy tắc tích hợp Pancake API cho page, hội thoại, message, webhook |
 | `docs/pancake-pos-api.md` | Quy tắc tích hợp Pancake POS |
 | `docs/handoff-protocol.md` | Quy tắc chuyển sale |
 | `docs/unified-ai-sales-hub.md` | Thiết kế sản phẩm hoàn chỉnh gom Pancake/POS/Botcake |
+| `docs/automation-workflow-blueprint.md` | Workflow tự động, lead scoring, follow-up, dashboard |
 | `prompts/system-prompt.txt` | Prompt chính cho AI Chị Hương |
 | `web/` | Dashboard nội bộ cho người vận hành |
 
@@ -55,6 +57,7 @@ Ghi chú cấu hình:
 - Khi chạy production lâu dài, nên nhập `BOTCAKE_PAGE_ID` thủ công để khóa đúng page/bot đang vận hành.
 - `PANCAKE_POS_SHOP_ID` có thể lấy bằng `GET /shops` sau khi đã có `PANCAKE_POS_API_KEY`.
 - `PANCAKE_POS_DEFAULT_WAREHOUSE_ID` có thể lấy bằng `GET /shops/{SHOP_ID}/warehouses`.
+- Nếu muốn Unified Inbox trong dự án, cần thêm Pancake API token: `PANCAKE_API_USER_ACCESS_TOKEN` để list pages hoặc `PANCAKE_API_PAGE_ACCESS_TOKEN` để gọi conversations/messages/tags.
 
 Giữ các giá trị này ở trạng thái an toàn trong Phase 1:
 
@@ -139,6 +142,7 @@ Mỗi lần cập nhật:
 ## 7. Những việc chưa được làm ở Phase 1
 
 - Chưa bật webhook public production.
+- Chưa có Pancake API connector cho Unified Inbox thật.
 - Chưa gửi tin nhắn thật cho khách nếu chưa có Botcake credentials.
 - Chưa đọc dữ liệu POS thật nếu chưa có Pancake POS credentials.
 - Chưa tạo đơn nháp thật.

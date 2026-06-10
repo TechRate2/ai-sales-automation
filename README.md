@@ -26,6 +26,7 @@ ai-sales-automation/
 ├── docs/
 │   ├── knowledge-base.md
 │   ├── botcake-capabilities.md
+│   ├── pancake-api.md
 │   ├── pancake-pos-api.md
 │   ├── system-architecture.md
 │   ├── handoff-protocol.md
@@ -33,6 +34,7 @@ ai-sales-automation/
 │   ├── technical-specification.md
 │   ├── ui-and-connection-research.md
 │   ├── unified-ai-sales-hub.md
+│   ├── automation-workflow-blueprint.md
 │   └── implementation-plan.md
 ├── src/
 │   ├── botcake/
@@ -59,6 +61,7 @@ ai-sales-automation/
 - Đã có `.env.example` để cấu hình Botcake/Pancake POS mà không hardcode secret.
 - Botcake Page ID có thể nhập thủ công hoặc tự suy ra từ `BOTCAKE_API_TOKEN` nếu token là JWT có field `id`.
 - Pancake POS Shop ID có thể lấy từ API thật bằng `GET /shops` sau khi có `PANCAKE_POS_API_KEY`.
+- Pancake API có thể list page bằng `GET /pages` nếu có `PANCAKE_API_USER_ACCESS_TOKEN`; đây là mảnh cần thêm cho Unified Inbox thật.
 - Đã có contracts, logger redaction, HTTP client timeout/retry, Botcake/Pancake POS adapter khung, AI handoff rules và doctor kiểm tra vận hành.
 - Đã có dashboard UI nội bộ để xem readiness, kết nối Botcake/POS, handoff queue trống an toàn và hướng dẫn lấy thông tin API.
 - Repo production hiện không chứa thư mục/file code test.
@@ -69,10 +72,12 @@ ai-sales-automation/
 Trước khi viết code tích hợp, cần đọc lại các tài liệu liên quan trong `docs/`, đặc biệt là:
 
 - `docs/botcake-capabilities.md`
+- `docs/pancake-api.md`
 - `docs/pancake-pos-api.md`
 - `docs/technical-specification.md`
 - `docs/handoff-protocol.md`
 - `docs/unified-ai-sales-hub.md`
+- `docs/automation-workflow-blueprint.md`
 - `docs/sales-prompt.md`
 
 ## Định hướng stack

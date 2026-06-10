@@ -13,6 +13,7 @@ Mức sẵn sàng hiện tại:
 | Nền backend TypeScript strict | 65% | Đã có config, logger, HTTP client, adapters, guardrails, doctor |
 | Tuân thủ tài liệu/an toàn | 70% | Không tự chốt đơn, không hardcode secret, draft order tắt mặc định |
 | Botcake live integration | 45% | Token/Page ID local đã đọc được tag thật; còn thiếu webhook payload thật, tag/flow IDs chuẩn hóa và test gửi tin bằng PSID nội bộ |
+| Pancake API / Unified Inbox | 20% | Đã xác minh tài liệu API page/conversation/message/webhook; chưa có Pancake User/Page Access Token và connector trong source |
 | Pancake POS live integration | 55% | API key local đã đọc được shop/kho/sản phẩm/tồn kho thật; còn thiếu xác minh draft status và luồng tạo đơn nháp an toàn |
 | AI tư vấn với dữ liệu thật | 20% | Có prompt/rule, nhưng Knowledge Base chưa có sản phẩm/chính sách thật |
 | Vận hành cho người không rành code | 58% | Có doctor/runbook và dashboard readiness nội bộ; chưa có dữ liệu hội thoại live |
@@ -51,6 +52,14 @@ Mức sẵn sàng hiện tại:
 - Chưa xác minh status nào là draft an toàn: `0` hay `17`.
 - Chưa xác minh payload tạo đơn nháp chính xác với shop thật.
 
+### Pancake API / Unified Inbox
+
+- Đã xác minh tài liệu chính thức có `GET /pages`, conversations, messages, tags, customers và webhooks.
+- Chưa có `PANCAKE_API_USER_ACCESS_TOKEN` hoặc `PANCAKE_API_PAGE_ACCESS_TOKEN` trong `.env`.
+- Chưa có connector đọc conversation/message/customer/tag trong source.
+- Chưa bật Pancake Webhook `messaging` qua support/settings.
+- Chưa có database lưu Unified Inbox.
+
 ### Knowledge Base
 
 - `docs/knowledge-base.md` vẫn là template, chưa có sản phẩm thật.
@@ -80,6 +89,16 @@ Mức sẵn sàng hiện tại:
 | Danh sách tag thật + tag ID | Gắn tag chính xác |
 | Flow IDs cho handoff/follow-up | Kích hoạt Flow/Automation đúng |
 | Channel đang dùng: Facebook/Zalo/Instagram/WhatsApp | Áp dụng chính sách gửi tin đúng kênh |
+
+### 4.1b Pancake API
+
+| Cần cung cấp | Cách dùng |
+| --- | --- |
+| `PANCAKE_API_USER_ACCESS_TOKEN` | Tự list pages và generate page token |
+| `PANCAKE_API_PAGE_ACCESS_TOKEN` | Đọc conversations/messages/customers/tags |
+| Page muốn bật webhook | Cấu hình Pancake Webhook `messaging` |
+| Domain HTTPS webhook | Nhận event real-time |
+| Quyền admin page | Generate token, cấu hình webhook, assign/tag |
 
 ### 4.2 Pancake POS
 
