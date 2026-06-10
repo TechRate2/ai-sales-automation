@@ -73,9 +73,19 @@ Lệnh kiểm tra:
 
 ```bash
 npm install
+npm run doctor
+npm run check
 npm run typecheck
 npm test
 ```
+
+Trong đó:
+
+- `npm run doctor`: kiểm tra cấu hình, prompt và khóa an toàn theo cách dễ đọc cho người vận hành.
+- `npm run check`: chạy typecheck, test và build trước khi commit/deploy.
+- Nếu `doctor` báo `[FAIL]`, không deploy production.
+
+Tài liệu vận hành cho chủ dự án: `docs/owner-runbook.md`.
 
 ## Quy tắc cập nhật GitHub
 
