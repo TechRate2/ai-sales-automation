@@ -32,6 +32,7 @@ ai-sales-automation/
 │   ├── sales-prompt.md
 │   ├── technical-specification.md
 │   ├── ui-and-connection-research.md
+│   ├── unified-ai-sales-hub.md
 │   └── implementation-plan.md
 ├── src/
 │   ├── botcake/
@@ -56,6 +57,8 @@ ai-sales-automation/
 
 - Đã có project Node.js TypeScript strict.
 - Đã có `.env.example` để cấu hình Botcake/Pancake POS mà không hardcode secret.
+- Botcake Page ID có thể nhập thủ công hoặc tự suy ra từ `BOTCAKE_API_TOKEN` nếu token là JWT có field `id`.
+- Pancake POS Shop ID có thể lấy từ API thật bằng `GET /shops` sau khi có `PANCAKE_POS_API_KEY`.
 - Đã có contracts, logger redaction, HTTP client timeout/retry, Botcake/Pancake POS adapter khung, AI handoff rules và doctor kiểm tra vận hành.
 - Đã có dashboard UI nội bộ để xem readiness, kết nối Botcake/POS, handoff queue trống an toàn và hướng dẫn lấy thông tin API.
 - Repo production hiện không chứa thư mục/file code test.
@@ -69,6 +72,7 @@ Trước khi viết code tích hợp, cần đọc lại các tài liệu liên 
 - `docs/pancake-pos-api.md`
 - `docs/technical-specification.md`
 - `docs/handoff-protocol.md`
+- `docs/unified-ai-sales-hub.md`
 - `docs/sales-prompt.md`
 
 ## Định hướng stack

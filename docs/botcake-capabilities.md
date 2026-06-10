@@ -795,7 +795,7 @@ Metrics đề xuất:
 
 Trước khi code:
 
-- Có `BOTCAKE_PAGE_ID` thật.
+- Có `BOTCAKE_PAGE_ID` thật hoặc xác nhận backend suy ra được Page ID từ `BOTCAKE_API_TOKEN` dạng JWT có field `id`.
 - Có `BOTCAKE_API_TOKEN` thật từ Botcake Settings/API.
 - Có ít nhất một `psid` test.
 - Có danh sách `flow_id` cho flow cần dùng.
@@ -853,4 +853,3 @@ Nguồn cần kiểm tra tiếp:
 - Botcake API References: `https://docs.pancake.biz/botcake/st-f7/st-p2`
 - Botcake Dynamic Block docs: `https://docs.pancake.biz/botcake/st-f7/st-p1`
 - Botcake Handover Protocol: `https://docs.pancake.biz/botcake/st-f7/st-p3`
-

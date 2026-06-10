@@ -4,7 +4,7 @@ Ngày audit: 2026-06-10
 
 ## 1. Kết luận ngắn
 
-Source hiện tại **đúng hướng và tuân thủ nguyên tắc an toàn cốt lõi**, nhưng **chưa thể chạy production thật cho khách hàng cuối** vì còn thiếu credentials, webhook payload thật, dữ liệu sản phẩm/chính sách thật và quy trình vận hành thật của shop.
+Source hiện tại **đúng hướng và tuân thủ nguyên tắc an toàn cốt lõi**. Sau kiểm tra ngày 2026-06-10, credentials local cho Botcake và Pancake POS đã gọi được API thật, nhưng **chưa thể chạy production thật cho khách hàng cuối** vì còn thiếu webhook payload thật, database/state, dữ liệu Knowledge Base đầy đủ và quy trình vận hành thật của shop.
 
 Mức sẵn sàng hiện tại:
 
@@ -12,11 +12,11 @@ Mức sẵn sàng hiện tại:
 | --- | ---: | --- |
 | Nền backend TypeScript strict | 65% | Đã có config, logger, HTTP client, adapters, guardrails, doctor |
 | Tuân thủ tài liệu/an toàn | 70% | Không tự chốt đơn, không hardcode secret, draft order tắt mặc định |
-| Botcake live integration | 25% | Có client API, nhưng thiếu credentials, webhook payload thật, tag/flow IDs thật |
-| Pancake POS live integration | 30% | Có client endpoint chính, nhưng thiếu API key/shop/warehouse và chưa xác minh draft status |
+| Botcake live integration | 45% | Token/Page ID local đã đọc được tag thật; còn thiếu webhook payload thật, tag/flow IDs chuẩn hóa và test gửi tin bằng PSID nội bộ |
+| Pancake POS live integration | 55% | API key local đã đọc được shop/kho/sản phẩm/tồn kho thật; còn thiếu xác minh draft status và luồng tạo đơn nháp an toàn |
 | AI tư vấn với dữ liệu thật | 20% | Có prompt/rule, nhưng Knowledge Base chưa có sản phẩm/chính sách thật |
 | Vận hành cho người không rành code | 58% | Có doctor/runbook và dashboard readiness nội bộ; chưa có dữ liệu hội thoại live |
-| Sẵn sàng production tổng thể | 35% | Chưa có kết nối thật, dữ liệu thật, webhook thật, UI/admin và monitoring production |
+| Sẵn sàng production tổng thể | 45% | Đã có kết nối API thật ở local; còn thiếu webhook public, database, Knowledge Base và monitoring production |
 
 ## 2. Những phần đã đúng theo yêu cầu
 
@@ -36,19 +36,18 @@ Mức sẵn sàng hiện tại:
 
 ### Botcake
 
-- Chưa có `BOTCAKE_PAGE_ID` thật.
-- Chưa có `BOTCAKE_API_TOKEN` thật.
+- Đã có `BOTCAKE_API_TOKEN` local và gọi được API tag thật.
+- `BOTCAKE_PAGE_ID` có thể nhập thủ công hoặc suy ra từ token JWT nếu có field `id`.
 - Chưa có webhook payload thật từ Botcake để map chính xác 100%.
 - Chưa xác minh cơ chế webhook auth: signature header, token, secret URL hay IP allowlist.
-- Chưa có danh sách tag thật và tag ID thật.
+- Đã đọc được danh sách tag thật bước đầu; cần chuẩn hóa tag ID dùng cho dự án.
 - Chưa có flow ID thật cho handoff/follow-up.
 
 ### Pancake POS
 
-- Chưa có `PANCAKE_POS_API_KEY` thật.
-- Chưa có `PANCAKE_POS_SHOP_ID` thật.
-- Chưa có `PANCAKE_POS_DEFAULT_WAREHOUSE_ID` thật.
-- Chưa query sản phẩm/tồn kho thật từ shop.
+- Đã có `PANCAKE_POS_API_KEY` local và gọi được `GET /shops`.
+- Đã xác định được `PANCAKE_POS_SHOP_ID` và warehouse ID local.
+- Đã query được sản phẩm/biến thể/tồn kho thật từ shop.
 - Chưa xác minh status nào là draft an toàn: `0` hay `17`.
 - Chưa xác minh payload tạo đơn nháp chính xác với shop thật.
 
@@ -141,10 +140,10 @@ Source hiện đạt mức **nền móng kỹ thuật an toàn**, chưa đạt m
 
 Để nâng từ 35% lên khoảng 60-70%, bước tiếp theo cần:
 
-1. Cung cấp credentials thật qua `.env`.
-2. Capture webhook Botcake thật.
-3. Query sản phẩm/tồn kho thật từ Pancake POS.
-4. Điền Knowledge Base thật.
-5. Xây webhook server + state store.
+1. Capture webhook Botcake thật.
+2. Chuẩn hóa tag/flow IDs cho handoff/follow-up.
+3. Điền Knowledge Base thật.
+4. Xây webhook server + state store.
+5. Xác minh draft order status/payload bằng dữ liệu shop thật.
 
 Để đạt 90%+, cần thêm dashboard vận hành, monitoring, follow-up engine, quy trình sale thật và kiểm tra end-to-end với khách nội bộ trước khi mở cho khách quảng cáo.

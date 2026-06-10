@@ -15,12 +15,15 @@ export interface AppConfig {
 export interface BotcakeConfig {
   apiBaseUrl: string;
   pageId: string | undefined;
+  pageIdSource: BotcakePageIdSource;
   apiToken: string | undefined;
   webhookSecret: string | undefined;
   timeoutMs: number;
   retryMaxAttempts: number;
   retryBaseDelayMs: number;
 }
+
+export type BotcakePageIdSource = "env" | "token" | "missing";
 
 export interface PancakePosConfig {
   apiBaseUrl: string;
@@ -46,14 +49,20 @@ const DEFAULT_BOTCAKE_API_BASE_URL = "https://botcake.io/api/public_api/v1";
 const DEFAULT_PANCAKE_POS_API_BASE_URL = "https://pos.pages.fm/api/v1";
 
 export function loadConfig(env: EnvRecord = loadRuntimeEnv()): AppConfig {
+  const botcakeApiToken = optionalString(env.BOTCAKE_API_TOKEN);
+  const explicitBotcakePageId = optionalString(env.BOTCAKE_PAGE_ID);
+  const inferredBotcakePageId = inferBotcakePageIdFromToken(botcakeApiToken);
+  const botcakePageId = explicitBotcakePageId ?? inferredBotcakePageId;
+
   return {
     env: parseNodeEnv(env.NODE_ENV),
     logLevel: parseLogLevel(env.LOG_LEVEL),
     port: parseNumber(env.APP_PORT, 3000),
     botcake: {
       apiBaseUrl: optionalString(env.BOTCAKE_API_BASE_URL) ?? DEFAULT_BOTCAKE_API_BASE_URL,
-      pageId: optionalString(env.BOTCAKE_PAGE_ID),
-      apiToken: optionalString(env.BOTCAKE_API_TOKEN),
+      pageId: botcakePageId,
+      pageIdSource: resolveBotcakePageIdSource(explicitBotcakePageId, inferredBotcakePageId),
+      apiToken: botcakeApiToken,
       webhookSecret: optionalString(env.BOTCAKE_WEBHOOK_SECRET),
       timeoutMs: parseNumber(env.BOTCAKE_DEFAULT_TIMEOUT_MS, 8000),
       retryMaxAttempts: parseNumber(env.BOTCAKE_RETRY_MAX_ATTEMPTS, 3),
@@ -85,7 +94,7 @@ export function validateConfig(config: AppConfig): ConfigIssue[] {
   const issues: ConfigIssue[] = [];
 
   if (config.env === "production") {
-    requireValue(issues, "BOTCAKE_PAGE_ID", config.botcake.pageId);
+    requireValue(issues, "BOTCAKE_PAGE_ID or token-derived page id", config.botcake.pageId);
     requireValue(issues, "BOTCAKE_API_TOKEN", config.botcake.apiToken);
     requireValue(issues, "PANCAKE_POS_API_KEY", config.pancakePos.apiKey);
     requireValue(issues, "PANCAKE_POS_SHOP_ID", config.pancakePos.shopId);
@@ -112,6 +121,38 @@ export function validateConfig(config: AppConfig): ConfigIssue[] {
   return issues;
 }
 
+export function inferBotcakePageIdFromToken(token: string | undefined): string | undefined {
+  const trimmed = optionalString(token);
+  if (trimmed === undefined) {
+    return undefined;
+  }
+
+  const [, payload] = trimmed.split(".");
+  if (payload === undefined) {
+    return undefined;
+  }
+
+  try {
+    const decoded = JSON.parse(decodeBase64Url(payload)) as unknown;
+    if (!isRecord(decoded)) {
+      return undefined;
+    }
+
+    const id = decoded.id;
+    if (typeof id === "string" && id.trim() !== "") {
+      return id.trim();
+    }
+
+    if (typeof id === "number" && Number.isFinite(id)) {
+      return String(id);
+    }
+
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function requireValue(issues: ConfigIssue[], key: string, value: string | undefined): void {
   if (value === undefined) {
     issues.push({
@@ -122,9 +163,35 @@ function requireValue(issues: ConfigIssue[], key: string, value: string | undefi
   }
 }
 
+function resolveBotcakePageIdSource(
+  explicitPageId: string | undefined,
+  inferredPageId: string | undefined
+): BotcakePageIdSource {
+  if (explicitPageId !== undefined) {
+    return "env";
+  }
+
+  if (inferredPageId !== undefined) {
+    return "token";
+  }
+
+  return "missing";
+}
+
 function optionalString(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed === "" ? undefined : trimmed;
+}
+
+function decodeBase64Url(value: string): string {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const paddingLength = (4 - (normalized.length % 4)) % 4;
+  const padded = normalized + "=".repeat(paddingLength);
+  return Buffer.from(padded, "base64").toString("utf8");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function parseNumber(value: string | undefined, fallback: number): number {

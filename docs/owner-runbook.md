@@ -23,6 +23,7 @@ Tài liệu này dành cho người không rành code nhưng cần kiểm soát 
 | `docs/botcake-capabilities.md` | Quy tắc tích hợp Botcake |
 | `docs/pancake-pos-api.md` | Quy tắc tích hợp Pancake POS |
 | `docs/handoff-protocol.md` | Quy tắc chuyển sale |
+| `docs/unified-ai-sales-hub.md` | Thiết kế sản phẩm hoàn chỉnh gom Pancake/POS/Botcake |
 | `prompts/system-prompt.txt` | Prompt chính cho AI Chị Hương |
 | `web/` | Dashboard nội bộ cho người vận hành |
 
@@ -43,11 +44,17 @@ copy .env.example .env
 Điền các giá trị thật vào `.env`:
 
 ```env
-BOTCAKE_PAGE_ID=
 BOTCAKE_API_TOKEN=
 PANCAKE_POS_API_KEY=
 PANCAKE_POS_SHOP_ID=
 ```
+
+Ghi chú cấu hình:
+
+- `BOTCAKE_PAGE_ID` có thể để trống nếu `BOTCAKE_API_TOKEN` là page token dạng JWT có field `id`. Hệ thống sẽ tự suy ra Page ID và `doctor` sẽ báo rõ.
+- Khi chạy production lâu dài, nên nhập `BOTCAKE_PAGE_ID` thủ công để khóa đúng page/bot đang vận hành.
+- `PANCAKE_POS_SHOP_ID` có thể lấy bằng `GET /shops` sau khi đã có `PANCAKE_POS_API_KEY`.
+- `PANCAKE_POS_DEFAULT_WAREHOUSE_ID` có thể lấy bằng `GET /shops/{SHOP_ID}/warehouses`.
 
 Giữ các giá trị này ở trạng thái an toàn trong Phase 1:
 
@@ -149,6 +156,7 @@ Mỗi lần cập nhật:
 
 - [ ] `.env` đã có Botcake credentials thật.
 - [ ] `.env` đã có Pancake POS credentials thật.
+- [ ] Botcake Page ID được nhập thủ công hoặc `doctor` xác nhận đã suy ra từ token.
 - [ ] `npm run doctor` không có `[FAIL]`.
 - [ ] `npm run check` pass.
 - [ ] Repo không có file code test/mock/demo trong source production.

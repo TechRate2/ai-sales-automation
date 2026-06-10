@@ -689,12 +689,19 @@ BOTCAKE_API_BASE_URL=
 
 PANCAKE_POS_SHOP_ID=
 PANCAKE_POS_API_KEY=
+PANCAKE_POS_DEFAULT_WAREHOUSE_ID=
 PANCAKE_POS_API_BASE_URL=
 
 LOW_STOCK_THRESHOLD=
 PRODUCT_CACHE_TTL_SECONDS=
 INVENTORY_CACHE_TTL_SECONDS=
 ```
+
+Ghi chú:
+
+- `BOTCAKE_PAGE_ID` có thể để trống nếu `BOTCAKE_API_TOKEN` là page token dạng JWT có field `id`; backend sẽ suy ra và ghi `pageIdSource = "token"`.
+- `PANCAKE_POS_SHOP_ID` lấy bằng `GET /shops`.
+- `PANCAKE_POS_DEFAULT_WAREHOUSE_ID` lấy bằng `GET /shops/{SHOP_ID}/warehouses`.
 
 Không commit file `.env` thật lên GitHub.
 

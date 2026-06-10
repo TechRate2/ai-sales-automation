@@ -15,6 +15,7 @@ Kết quả:
 | Hạng mục | Trạng thái |
 | --- | --- |
 | Page ID | Hợp lệ |
+| Page ID inference | Source có thể suy ra Page ID từ token JWT nếu `BOTCAKE_PAGE_ID` để trống |
 | Public API token | Hợp lệ |
 | Endpoint kiểm tra | `GET /pages/{page_id}/get_list_tag?page=1` |
 | HTTP status | `200` |

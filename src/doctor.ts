@@ -27,9 +27,7 @@ export async function createDoctorReport(config: AppConfig = loadConfig()): Prom
     {
       name: "Botcake credentials",
       status: config.botcake.pageId !== undefined && config.botcake.apiToken !== undefined ? "pass" : "warn",
-      message: config.botcake.pageId !== undefined && config.botcake.apiToken !== undefined
-        ? "Đã có BOTCAKE_PAGE_ID và BOTCAKE_API_TOKEN."
-        : "Chưa có BOTCAKE_PAGE_ID/BOTCAKE_API_TOKEN. Hệ thống chưa thể gửi tin nhắn Botcake thật."
+      message: createBotcakeCredentialMessage(config)
     },
     {
       name: "Pancake POS credentials",
@@ -51,6 +49,18 @@ export async function createDoctorReport(config: AppConfig = loadConfig()): Prom
     overallStatus: summarizeStatus(checks),
     checks
   };
+}
+
+function createBotcakeCredentialMessage(config: AppConfig): string {
+  if (config.botcake.pageId === undefined || config.botcake.apiToken === undefined) {
+    return "Chưa có BOTCAKE_API_TOKEN hoặc không suy ra được Page ID. Hệ thống chưa thể gửi tin nhắn Botcake thật.";
+  }
+
+  if (config.botcake.pageIdSource === "token") {
+    return "Đã có BOTCAKE_API_TOKEN; Page ID được suy ra từ payload token. Có thể nhập BOTCAKE_PAGE_ID thủ công nếu muốn khóa cứng.";
+  }
+
+  return "Đã có BOTCAKE_PAGE_ID và BOTCAKE_API_TOKEN.";
 }
 
 export function formatDoctorReport(report: DoctorReport): string {

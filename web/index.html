@@ -199,13 +199,14 @@
             <article class="guide-card">
               <h3>Botcake</h3>
               <ol>
-                <li>Lấy `BOTCAKE_PAGE_ID` từ page/bot đang dùng trong Botcake.</li>
+                <li>`BOTCAKE_PAGE_ID` có thể nhập thủ công từ page/bot đang dùng trong Botcake.</li>
+                <li>Nếu `BOTCAKE_API_TOKEN` là JWT có field `id`, hệ thống sẽ tự suy ra Page ID khi `BOTCAKE_PAGE_ID` để trống.</li>
                 <li>Lấy `BOTCAKE_API_TOKEN` trong khu vực Developer/API của Botcake admin.</li>
                 <li>Dùng header `access-token` khi gọi Public API.</li>
                 <li>Dùng `GET /pages/{page_id}/get_list_tag` để lấy tag ID.</li>
                 <li>Dùng `POST /pages/{page_id}/flows/send_content` và `send_flow` để gửi tin/flow.</li>
               </ol>
-              <p class="guide-note">Vị trí lấy token trong giao diện Botcake cần xác minh trực tiếp trên tài khoản của anh.</p>
+              <p class="guide-note">Botcake Public API vẫn dùng `page_id` trong URL; tự suy ra từ token là tiện ích cấu hình, không thay thế bước xác minh page/bot thật.</p>
             </article>
             <article class="guide-card">
               <h3>Pancake POS</h3>

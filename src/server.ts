@@ -103,9 +103,7 @@ async function buildReadinessPayload(config: AppConfig): Promise<ReadinessPayloa
       key: "botcake_credentials",
       label: "Botcake credentials",
       status: hasBotcakeCredentials(config) ? "pass" : "warn",
-      message: hasBotcakeCredentials(config)
-        ? "Đã có Page ID và API token."
-        : "Chưa có BOTCAKE_PAGE_ID/BOTCAKE_API_TOKEN."
+      message: createBotcakeCredentialMessage(config)
     },
     {
       key: "pancake_pos_credentials",
@@ -139,7 +137,7 @@ async function buildReadinessPayload(config: AppConfig): Promise<ReadinessPayloa
       botcake: {
         status: hasBotcakeCredentials(config) ? "pass" : "warn",
         label: "Botcake",
-        message: hasBotcakeCredentials(config) ? "Credentials ready" : "Needs Page ID and token"
+        message: createBotcakeServiceMessage(config)
       },
       pancakePos: {
         status: hasPancakePosCredentials(config) ? "pass" : "warn",
@@ -153,6 +151,26 @@ async function buildReadinessPayload(config: AppConfig): Promise<ReadinessPayloa
       }
     }
   };
+}
+
+function createBotcakeCredentialMessage(config: AppConfig): string {
+  if (!hasBotcakeCredentials(config)) {
+    return "Chưa có BOTCAKE_API_TOKEN hoặc không suy ra được Page ID.";
+  }
+
+  if (config.botcake.pageIdSource === "token") {
+    return "Đã có API token; Page ID được suy ra tự động từ token.";
+  }
+
+  return "Đã có Page ID và API token.";
+}
+
+function createBotcakeServiceMessage(config: AppConfig): string {
+  if (!hasBotcakeCredentials(config)) {
+    return "Needs token and page id";
+  }
+
+  return config.botcake.pageIdSource === "token" ? "Ready, page id inferred" : "Credentials ready";
 }
 
 function hasBotcakeCredentials(config: AppConfig): boolean {

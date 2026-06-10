@@ -54,6 +54,7 @@ Thông tin cần lấy từ tài khoản Botcake thật:
 Điểm cần xác minh trực tiếp trong Botcake admin:
 
 - Vị trí cụ thể để lấy API token trong giao diện hiện tại.
+- Botcake Public API hiện vẫn dùng `page_id` trong URL. Source đã hỗ trợ tự suy ra Page ID từ `BOTCAKE_API_TOKEN` nếu token là JWT có field `id`, nhưng vẫn cần xác minh page/bot thật trên admin.
 - Webhook inbound cấu hình ở đâu và payload chính thức ra sao.
 - `actions.add_tag` có hoạt động đồng nhất trên tất cả kênh đang dùng không.
 

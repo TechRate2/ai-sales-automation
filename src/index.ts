@@ -13,6 +13,7 @@ async function main(): Promise<void> {
     configIssueCount: issues.length,
     promptLoaded: prompt.ok,
     botcakeConfigured: config.botcake.pageId !== undefined && config.botcake.apiToken !== undefined,
+    botcakePageIdSource: config.botcake.pageIdSource,
     pancakePosConfigured: config.pancakePos.apiKey !== undefined && config.pancakePos.shopId !== undefined,
     draftOrderEnabled: config.pancakePos.enableDraftOrderCreation
   });
