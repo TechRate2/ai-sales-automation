@@ -21,6 +21,7 @@
           <a class="nav-item is-active" href="#overview">Tổng quan</a>
           <a class="nav-item" href="#queue">Handoff</a>
           <a class="nav-item" href="#integrations">Kết nối</a>
+          <a class="nav-item" href="#live-data">Dữ liệu thật</a>
           <a class="nav-item" href="#knowledge">Knowledge Base</a>
           <a class="nav-item" href="#guides">Lấy thông tin API</a>
         </nav>
@@ -143,6 +144,52 @@
               </div>
               <div class="service-state" id="draft-state">Đang kiểm tra</div>
             </article>
+          </div>
+        </section>
+
+        <section class="panel wide-panel" id="live-data">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">Live API discovery</p>
+              <h2>Dữ liệu thật đang đọc được</h2>
+            </div>
+            <a class="button button-secondary" href="/api/integrations/live" target="_blank" rel="noreferrer">Xem JSON thật</a>
+          </div>
+          <div class="live-grid">
+            <article class="live-card">
+              <div class="live-card-header">
+                <span class="service-mark botcake-mark">B</span>
+                <div>
+                  <h3>Botcake Tags</h3>
+                  <p id="live-botcake-summary">Đang đọc dữ liệu thật</p>
+                </div>
+              </div>
+              <div class="chip-list" id="live-botcake-tags"></div>
+            </article>
+
+            <article class="live-card">
+              <div class="live-card-header">
+                <span class="service-mark pos-mark">P</span>
+                <div>
+                  <h3>Pancake POS</h3>
+                  <p id="live-pos-summary">Đang đọc shop và kho thật</p>
+                </div>
+              </div>
+              <div class="compact-list" id="live-warehouses"></div>
+            </article>
+          </div>
+
+          <div class="live-products">
+            <div class="table-header">
+              <h3>Sản phẩm mẫu từ POS</h3>
+              <span id="live-product-count">Đang đồng bộ</span>
+            </div>
+            <div class="product-table" id="live-products-table"></div>
+          </div>
+
+          <div class="next-inputs">
+            <h3>Cần bổ sung để build Unified Inbox thật</h3>
+            <div class="compact-list" id="next-required-inputs"></div>
           </div>
         </section>
 

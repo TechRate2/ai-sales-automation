@@ -33,6 +33,13 @@ const elements = {
   botcakeState: document.getElementById("botcake-state"),
   posState: document.getElementById("pos-state"),
   draftState: document.getElementById("draft-state"),
+  liveBotcakeSummary: document.getElementById("live-botcake-summary"),
+  liveBotcakeTags: document.getElementById("live-botcake-tags"),
+  livePosSummary: document.getElementById("live-pos-summary"),
+  liveWarehouses: document.getElementById("live-warehouses"),
+  liveProductCount: document.getElementById("live-product-count"),
+  liveProductsTable: document.getElementById("live-products-table"),
+  nextRequiredInputs: document.getElementById("next-required-inputs"),
   refreshButton: document.getElementById("refresh-button")
 };
 
@@ -49,6 +56,20 @@ async function loadReadiness() {
     renderError(error);
   } finally {
     setLoading(false);
+  }
+}
+
+async function loadLiveIntegrations() {
+  renderLiveLoading();
+  try {
+    const response = await fetch("/api/integrations/live", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Live API returned ${response.status}`);
+    }
+
+    renderLiveIntegrations(await response.json());
+  } catch (error) {
+    renderLiveError(error);
   }
 }
 
@@ -102,6 +123,159 @@ function renderServiceState(target, service) {
   target.className = `service-state ${tone.className}`;
 }
 
+function renderLiveIntegrations(payload) {
+  renderLiveBotcake(payload.botcake);
+  renderLivePos(payload.pancakePos);
+  renderNextRequiredInputs(payload.nextRequiredInputs ?? []);
+}
+
+function renderLiveBotcake(botcake) {
+  const tone = statusTone[botcake?.status] ?? statusTone.warn;
+  elements.liveBotcakeSummary.textContent = `${tone.label} · ${botcake?.message ?? "Chưa có dữ liệu"}`;
+  elements.liveBotcakeTags.innerHTML = "";
+
+  const tags = botcake?.sampleTags ?? [];
+  if (tags.length === 0) {
+    elements.liveBotcakeTags.appendChild(createMutedLine("Chưa đọc được tag nào."));
+    return;
+  }
+
+  for (const tag of tags) {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = tag.name;
+    elements.liveBotcakeTags.appendChild(chip);
+  }
+}
+
+function renderLivePos(pos) {
+  const tone = statusTone[pos?.status] ?? statusTone.warn;
+  const shopName = pos?.shop?.name ?? "Chưa xác định shop";
+  const total = typeof pos?.productTotalEntries === "number" ? `${pos.productTotalEntries} biến thể` : "chưa rõ tổng";
+  elements.livePosSummary.textContent = `${tone.label} · ${shopName} · ${total}`;
+
+  elements.liveWarehouses.innerHTML = "";
+  for (const warehouse of pos?.warehouses ?? []) {
+    const row = document.createElement("div");
+    row.className = "compact-row";
+    const title = document.createElement("strong");
+    title.textContent = warehouse.name;
+    const meta = document.createElement("span");
+    meta.textContent = [
+      warehouse.isDefault ? "Kho mặc định" : "Kho",
+      warehouse.allowCreateOrder === true ? "cho tạo đơn" : "cần kiểm tra tạo đơn"
+    ].join(" · ");
+    row.append(title, meta);
+    elements.liveWarehouses.appendChild(row);
+  }
+
+  if ((pos?.warehouses ?? []).length === 0) {
+    elements.liveWarehouses.appendChild(createMutedLine("Chưa đọc được kho."));
+  }
+
+  renderLiveProducts(pos?.sampleProducts ?? [], total);
+}
+
+function renderLiveProducts(products, totalLabel) {
+  elements.liveProductCount.textContent = totalLabel;
+  elements.liveProductsTable.innerHTML = "";
+
+  if (products.length === 0) {
+    elements.liveProductsTable.appendChild(createMutedLine("Chưa đọc được sản phẩm mẫu."));
+    return;
+  }
+
+  for (const product of products) {
+    const row = document.createElement("div");
+    row.className = "product-row";
+
+    const image = document.createElement("div");
+    image.className = "product-thumb";
+    if (product.imageUrl) {
+      image.style.backgroundImage = `url("${product.imageUrl}")`;
+    } else {
+      image.textContent = "POS";
+    }
+
+    const info = document.createElement("div");
+    const name = document.createElement("strong");
+    name.textContent = product.variantName;
+    const meta = document.createElement("span");
+    meta.textContent = [
+      product.size ? `Size ${product.size}` : undefined,
+      product.color,
+      formatMoney(product.price)
+    ].filter(Boolean).join(" · ");
+    info.append(name, meta);
+
+    const stock = document.createElement("div");
+    stock.className = `stock-pill stock-${product.inventoryStatus}`;
+    stock.textContent = `${renderInventoryStatus(product.inventoryStatus)} · ${product.availableQuantity ?? "?"}`;
+
+    row.append(image, info, stock);
+    elements.liveProductsTable.appendChild(row);
+  }
+}
+
+function renderNextRequiredInputs(items) {
+  elements.nextRequiredInputs.innerHTML = "";
+  for (const item of items) {
+    elements.nextRequiredInputs.appendChild(createMutedLine(item));
+  }
+}
+
+function renderLiveLoading() {
+  elements.liveBotcakeSummary.textContent = "Đang đọc Botcake thật";
+  elements.livePosSummary.textContent = "Đang đọc Pancake POS thật";
+  elements.liveProductCount.textContent = "Đang đồng bộ";
+  elements.liveBotcakeTags.innerHTML = "";
+  elements.liveWarehouses.innerHTML = "";
+  elements.liveProductsTable.innerHTML = "";
+  elements.nextRequiredInputs.innerHTML = "";
+}
+
+function renderLiveError(error) {
+  const message = error instanceof Error ? error.message : "Không đọc được API live.";
+  elements.liveBotcakeSummary.textContent = message;
+  elements.livePosSummary.textContent = message;
+  elements.liveProductCount.textContent = "Lỗi";
+}
+
+function createMutedLine(text) {
+  const row = document.createElement("div");
+  row.className = "compact-row";
+  const span = document.createElement("span");
+  span.textContent = text;
+  row.appendChild(span);
+  return row;
+}
+
+function formatMoney(value) {
+  if (typeof value !== "number") {
+    return undefined;
+  }
+
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0
+  }).format(value);
+}
+
+function renderInventoryStatus(status) {
+  switch (status) {
+    case "in_stock":
+      return "Còn hàng";
+    case "low_stock":
+      return "Còn ít";
+    case "out_of_stock":
+      return "Hết hàng";
+    case "unknown":
+    default:
+      return "Chưa rõ";
+  }
+}
+
 function renderError(error) {
   elements.overallTitle.textContent = "Không đọc được backend";
   elements.overallMessage.textContent = error instanceof Error ? error.message : "Readiness API không phản hồi.";
@@ -124,6 +298,8 @@ function setLoading(isLoading) {
 
 elements.refreshButton.addEventListener("click", () => {
   void loadReadiness();
+  void loadLiveIntegrations();
 });
 
 void loadReadiness();
+void loadLiveIntegrations();

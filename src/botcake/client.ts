@@ -115,5 +115,9 @@ function normalizeTags(raw: unknown): BotcakeTag[] {
 
 function readString(source: Record<string, unknown>, key: string): string | undefined {
   const value = source[key];
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+
   return typeof value === "string" && value.trim() !== "" ? value : undefined;
 }

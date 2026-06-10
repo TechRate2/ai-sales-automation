@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { loadSystemPrompt } from "./ai/prompt-loader";
+import { buildLiveDiscoveryPayload } from "./integrations/live-discovery";
 import { loadConfig, validateConfig, type AppConfig } from "./utils/config";
 import { createLogger } from "./utils/logger";
 
@@ -56,6 +57,12 @@ async function handleRequest(
 
   if (url.pathname === "/api/readiness") {
     const payload = await buildReadinessPayload(config);
+    sendJson(response, payload);
+    return;
+  }
+
+  if (url.pathname === "/api/integrations/live") {
+    const payload = await buildLiveDiscoveryPayload(config);
     sendJson(response, payload);
     return;
   }

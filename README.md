@@ -101,6 +101,11 @@ Trong đó:
 - `npm run dev`: mở backend UI server tại `http://localhost:3000`.
 - Nếu `doctor` báo `[FAIL]`, không deploy production.
 
+API nội bộ hiện có:
+
+- `GET /api/readiness`: kiểm tra cấu hình và khóa an toàn, không gọi tạo đơn.
+- `GET /api/integrations/live`: gọi Botcake/Pancake POS thật bằng `.env` local và trả dữ liệu đã lọc gọn để dashboard hiển thị.
+
 Tài liệu vận hành cho chủ dự án: `docs/owner-runbook.md`.
 
 ## Quy tắc cập nhật GitHub
