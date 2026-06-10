@@ -74,6 +74,7 @@ Trước khi viết code tích hợp, cần đọc lại các tài liệu liên 
 
 - `docs/botcake-capabilities.md`
 - `docs/pancake-api.md`
+- `docs/token-acquisition-guide.md`
 - `docs/pancake-pos-api.md`
 - `docs/technical-specification.md`
 - `docs/handoff-protocol.md`

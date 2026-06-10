@@ -171,7 +171,25 @@ Mỗi lần cập nhật:
 - [ ] Đã test một hội thoại end-to-end với khách nội bộ.
 - [ ] Chưa bật tạo đơn nháp nếu chưa xác minh POS draft status.
 
-## 10. Kết luận
+## 10. Token/API key cần bổ sung
+
+Xem chi tiết trong `docs/token-acquisition-guide.md`.
+
+Các biến quan trọng:
+
+```env
+BOTCAKE_API_TOKEN=
+PANCAKE_API_USER_ACCESS_TOKEN=
+PANCAKE_API_PAGE_ACCESS_TOKEN=
+PANCAKE_API_PAGE_ID=
+PANCAKE_POS_API_KEY=
+PANCAKE_POS_SHOP_ID=
+PANCAKE_POS_DEFAULT_WAREHOUSE_ID=
+```
+
+Ghi nhớ: POS `api_key` chỉ dùng cho Pancake POS. Unified Inbox cần `PANCAKE_API_PAGE_ACCESS_TOKEN` hoặc `PANCAKE_API_USER_ACCESS_TOKEN`.
+
+## 11. Kết luận
 
 Nguyên tắc vận hành là: **đúng dữ liệu, an toàn trước, sale duyệt cuối**.
 

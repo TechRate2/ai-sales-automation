@@ -256,6 +256,16 @@
               <p class="guide-note">Botcake Public API vẫn dùng `page_id` trong URL; tự suy ra từ token là tiện ích cấu hình, không thay thế bước xác minh page/bot thật.</p>
             </article>
             <article class="guide-card">
+              <h3>Pancake Inbox</h3>
+              <ol>
+                <li>`PANCAKE_API_PAGE_ACCESS_TOKEN` dùng để đọc conversations, messages, tags và customers của page.</li>
+                <li>`PANCAKE_API_USER_ACCESS_TOKEN` dùng để tự list page hoặc generate page token khi có xác nhận.</li>
+                <li>Nếu chỉ kết nối page hiện tại, ưu tiên lấy Page Access Token và điền `PANCAKE_API_PAGE_ID`.</li>
+                <li>Không tự regenerate Page Access Token nếu chưa có xác nhận của chủ dự án.</li>
+              </ol>
+              <p class="guide-note">POS `api_key` không thể thay thế Pancake `page_access_token` cho Unified Inbox.</p>
+            </article>
+            <article class="guide-card">
               <h3>Pancake POS</h3>
               <ol>
                 <li>Vào Cấu hình → Nâng cao → Kết nối bên thứ 3 → Webhook/API.</li>
