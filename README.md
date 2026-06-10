@@ -30,31 +30,52 @@ ai-sales-automation/
 │   ├── system-architecture.md
 │   ├── handoff-protocol.md
 │   ├── sales-prompt.md
+│   ├── technical-specification.md
 │   └── implementation-plan.md
 ├── src/
 │   ├── botcake/
 │   ├── pos/
 │   ├── ai/
 │   └── utils/
+├── tests/
 ├── prompts/
 │   └── system-prompt.txt
+├── .env.example
+├── package.json
+├── tsconfig.json
 └── README.md
 ```
 
 ## Trạng thái hiện tại
 
-Đây là bước nền tảng: chỉ tạo tài liệu tham chiếu, prompt và cấu trúc thư mục. Chưa có endpoint, schema, package Node.js TypeScript hoặc logic gọi API thật.
+Đây là giai đoạn nền tảng Phase 1:
+
+- Đã có project Node.js TypeScript strict.
+- Đã có `.env.example` để cấu hình Botcake/Pancake POS mà không hardcode secret.
+- Đã có contracts, logger redaction, HTTP client timeout/retry, Botcake/Pancake POS adapter khung, AI handoff rules và tests nền.
+- Chưa có public API server/webhook endpoint production.
+- Chưa bật tạo đơn nháp production. `ENABLE_POS_DRAFT_ORDER=false` theo mặc định cho tới khi xác minh trạng thái draft an toàn trong Pancake POS.
+- Chưa có dữ liệu sản phẩm/chính sách thật trong Knowledge Base.
 
 Trước khi viết code tích hợp, cần đọc lại các tài liệu liên quan trong `docs/`, đặc biệt là:
 
 - `docs/botcake-capabilities.md`
 - `docs/pancake-pos-api.md`
+- `docs/technical-specification.md`
 - `docs/handoff-protocol.md`
 - `docs/sales-prompt.md`
 
 ## Định hướng stack
 
-Stack backend dự kiến cho giai đoạn code: Node.js TypeScript.
+Stack backend hiện tại: Node.js TypeScript strict.
+
+Lệnh kiểm tra:
+
+```bash
+npm install
+npm run typecheck
+npm test
+```
 
 ## Quy tắc cập nhật GitHub
 
