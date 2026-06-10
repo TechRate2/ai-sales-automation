@@ -26,6 +26,7 @@ Tài liệu này dành cho người không rành code nhưng cần kiểm soát 
 | `docs/handoff-protocol.md` | Quy tắc chuyển sale |
 | `docs/unified-ai-sales-hub.md` | Thiết kế sản phẩm hoàn chỉnh gom Pancake/POS/Botcake |
 | `docs/automation-workflow-blueprint.md` | Workflow tự động, lead scoring, follow-up, dashboard |
+| `docs/api-coverage-and-product-strategy.md` | API đang dùng/chưa dùng, benchmark quốc tế và roadmap UI thật |
 | `prompts/system-prompt.txt` | Prompt chính cho AI Chị Hương |
 | `web/` | Dashboard nội bộ cho người vận hành |
 

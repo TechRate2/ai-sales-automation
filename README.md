@@ -35,6 +35,7 @@ ai-sales-automation/
 │   ├── ui-and-connection-research.md
 │   ├── unified-ai-sales-hub.md
 │   ├── automation-workflow-blueprint.md
+│   ├── api-coverage-and-product-strategy.md
 │   └── implementation-plan.md
 ├── src/
 │   ├── botcake/
@@ -78,6 +79,7 @@ Trước khi viết code tích hợp, cần đọc lại các tài liệu liên 
 - `docs/handoff-protocol.md`
 - `docs/unified-ai-sales-hub.md`
 - `docs/automation-workflow-blueprint.md`
+- `docs/api-coverage-and-product-strategy.md`
 - `docs/sales-prompt.md`
 
 ## Định hướng stack
