@@ -1,5 +1,7 @@
 import { BotcakeClient } from "../botcake/client";
 import type { BotcakeTag } from "../botcake/types";
+import { PancakeApiClient } from "../pancake/client";
+import type { PancakeConversationSummary, PancakePageSummary, PancakeTagSummary } from "../pancake/types";
 import { mapInventoryFromVariation, mapPancakeVariation } from "../pos/mappers";
 import { PancakePosClient } from "../pos/client";
 import type { InventoryStatus } from "../pos/types";
@@ -10,6 +12,7 @@ export interface LiveDiscoveryPayload {
   checkedAt: string;
   overallStatus: "pass" | "warn" | "fail";
   botcake: LiveBotcakeStatus;
+  pancakeApi: LivePancakeApiStatus;
   pancakePos: LivePancakePosStatus;
   nextRequiredInputs: string[];
 }
@@ -20,6 +23,33 @@ export interface LiveBotcakeStatus {
   tagCount: number;
   sampleTags: LiveTag[];
   message: string;
+}
+
+export interface LivePancakeApiStatus {
+  status: "pass" | "warn" | "fail";
+  mode: "page_token" | "user_token" | "not_configured";
+  pageId: string | undefined;
+  pageCount: number | undefined;
+  samplePages: LivePancakePage[];
+  conversationCount: number | undefined;
+  sampleConversations: LivePancakeConversation[];
+  tagCount: number | undefined;
+  sampleTags: LiveTag[];
+  message: string;
+}
+
+export interface LivePancakePage {
+  id: string;
+  name: string;
+  platform: string | undefined;
+}
+
+export interface LivePancakeConversation {
+  id: string;
+  type: string | undefined;
+  customerName: string | undefined;
+  updatedAt: string | undefined;
+  lastMessageAt: string | undefined;
 }
 
 export interface LiveTag {
@@ -65,15 +95,17 @@ export interface LiveProductSample {
 }
 
 export async function buildLiveDiscoveryPayload(config: AppConfig): Promise<LiveDiscoveryPayload> {
-  const [botcake, pancakePos] = await Promise.all([
+  const [botcake, pancakeApi, pancakePos] = await Promise.all([
     discoverBotcake(config),
+    discoverPancakeApi(config),
     discoverPancakePos(config)
   ]);
 
   return {
     checkedAt: new Date().toISOString(),
-    overallStatus: summarizeStatus([botcake.status, pancakePos.status]),
+    overallStatus: summarizeStatus([botcake.status, pancakeApi.status, pancakePos.status]),
     botcake,
+    pancakeApi,
     pancakePos,
     nextRequiredInputs: buildNextRequiredInputs(config)
   };
@@ -101,6 +133,84 @@ async function discoverBotcake(config: AppConfig): Promise<LiveBotcakeStatus> {
     message: tags.data.length > 0
       ? "Đã đọc được tag thật từ Botcake."
       : "Botcake API phản hồi thành công nhưng chưa đọc được tag nào."
+  };
+}
+
+async function discoverPancakeApi(config: AppConfig): Promise<LivePancakeApiStatus> {
+  const client = new PancakeApiClient(config.pancakeApi);
+  const hasPageToken = config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId !== undefined;
+  const hasUserToken = config.pancakeApi.userAccessToken !== undefined;
+
+  if (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId === undefined) {
+    return createPancakeApiWarn(
+      "not_configured",
+      undefined,
+      "Đã có PANCAKE_API_PAGE_ACCESS_TOKEN nhưng thiếu PANCAKE_API_PAGE_ID."
+    );
+  }
+
+  if (hasPageToken) {
+    const [conversations, tags] = await Promise.all([
+      client.listConversations(),
+      client.listTags()
+    ]);
+
+    const failed = [conversations, tags].find((result) => !result.ok);
+    if (failed !== undefined && !failed.ok) {
+      return createPancakeApiWarn("page_token", config.pancakeApi.pageId, formatError(failed.error));
+    }
+
+    const conversationItems = conversations.ok ? normalizeConversations(conversations.data.data) : [];
+    const tagItems = tags.ok ? normalizePancakeTags(tags.data.data) : [];
+
+    return {
+      status: "pass",
+      mode: "page_token",
+      pageId: config.pancakeApi.pageId,
+      pageCount: undefined,
+      samplePages: [],
+      conversationCount: conversationItems.length,
+      sampleConversations: conversationItems.slice(0, 5).map(toLiveConversation),
+      tagCount: tagItems.length,
+      sampleTags: tagItems.slice(0, 8).map(toLivePancakeTag),
+      message: "Đã đọc được Pancake Inbox thật bằng Page Access Token."
+    };
+  }
+
+  if (hasUserToken) {
+    const pages = await client.listPages();
+    if (!pages.ok) {
+      return createPancakeApiWarn("user_token", config.pancakeApi.pageId, formatError(pages.error));
+    }
+
+    const pageItems = normalizePages(pages.data.data);
+    return {
+      status: pageItems.length > 0 ? "pass" : "warn",
+      mode: "user_token",
+      pageId: config.pancakeApi.pageId,
+      pageCount: pageItems.length,
+      samplePages: pageItems.slice(0, 6).map(toLivePage),
+      conversationCount: undefined,
+      sampleConversations: [],
+      tagCount: undefined,
+      sampleTags: [],
+      message: pageItems.length > 0
+        ? "Đã đọc được danh sách page Pancake bằng User Access Token."
+        : "Pancake API phản hồi nhưng chưa đọc được page nào."
+    };
+  }
+
+  return {
+    status: "warn",
+    mode: "not_configured",
+    pageId: config.pancakeApi.pageId,
+    pageCount: undefined,
+    samplePages: [],
+    conversationCount: undefined,
+    sampleConversations: [],
+    tagCount: undefined,
+    sampleTags: [],
+    message: "Chưa có PANCAKE_API_PAGE_ACCESS_TOKEN hoặc PANCAKE_API_USER_ACCESS_TOKEN cho Unified Inbox."
   };
 }
 
@@ -150,6 +260,88 @@ function toLiveTag(tag: BotcakeTag): LiveTag {
     id: tag.id,
     name: tag.name
   };
+}
+
+function toLivePancakeTag(tag: PancakeTagSummary): LiveTag {
+  return {
+    id: tag.id,
+    name: tag.name
+  };
+}
+
+function toLivePage(page: PancakePageSummary): LivePancakePage {
+  return {
+    id: page.id,
+    name: page.name,
+    platform: page.platform
+  };
+}
+
+function toLiveConversation(conversation: PancakeConversationSummary): LivePancakeConversation {
+  return {
+    id: conversation.id,
+    type: conversation.type,
+    customerName: conversation.customerName,
+    updatedAt: conversation.updatedAt,
+    lastMessageAt: conversation.lastMessageAt
+  };
+}
+
+function createPancakeApiWarn(
+  mode: LivePancakeApiStatus["mode"],
+  pageId: string | undefined,
+  message: string
+): LivePancakeApiStatus {
+  return {
+    status: "warn",
+    mode,
+    pageId,
+    pageCount: undefined,
+    samplePages: [],
+    conversationCount: undefined,
+    sampleConversations: [],
+    tagCount: undefined,
+    sampleTags: [],
+    message
+  };
+}
+
+function normalizePages(raw: unknown): PancakePageSummary[] {
+  return extractLikelyArray(raw, ["pages", "data"])
+    .filter(isRecord)
+    .map((item) => ({
+      id: readString(item, "id") ?? readString(item, "page_id") ?? "",
+      name: readString(item, "name") ?? readString(item, "page_name") ?? "Không rõ tên page",
+      platform: readString(item, "platform") ?? readString(item, "channel"),
+      raw: item
+    }))
+    .filter((page) => page.id !== "");
+}
+
+function normalizeConversations(raw: unknown): PancakeConversationSummary[] {
+  return extractLikelyArray(raw, ["conversations", "data"])
+    .filter(isRecord)
+    .map((item) => ({
+      id: readString(item, "id") ?? readString(item, "conversation_id") ?? "",
+      type: readString(item, "type") ?? readString(item, "conversation_type"),
+      customerName: readNestedString(item, ["customer", "name"]) ?? readNestedString(item, ["from", "name"]) ?? readString(item, "customer_name"),
+      updatedAt: readString(item, "updated_at") ?? readString(item, "updated_time"),
+      lastMessageAt: readString(item, "last_message_at") ?? readNestedString(item, ["last_message", "created_at"]),
+      raw: item
+    }))
+    .filter((conversation) => conversation.id !== "");
+}
+
+function normalizePancakeTags(raw: unknown): PancakeTagSummary[] {
+  return extractLikelyArray(raw, ["tags", "data"])
+    .filter(isRecord)
+    .map((item) => ({
+      id: readString(item, "id") ?? readString(item, "tag_id") ?? "",
+      name: readString(item, "name") ?? readString(item, "text") ?? readString(item, "tag_name") ?? "",
+      color: readString(item, "color"),
+      raw: item
+    }))
+    .filter((tag) => tag.id !== "" && tag.name !== "");
 }
 
 function extractShop(raw: unknown, configuredShopId: string | undefined): LiveShop | undefined {
@@ -211,7 +403,17 @@ function toProductSample(raw: Record<string, unknown>): LiveProductSample | unde
 function buildNextRequiredInputs(config: AppConfig): string[] {
   const missing: string[] = [];
 
-  missing.push("PANCAKE_API_USER_ACCESS_TOKEN hoặc PANCAKE_API_PAGE_ACCESS_TOKEN để xây Unified Inbox thật.");
+  const hasPancakeInboxToken = config.pancakeApi.userAccessToken !== undefined
+    || (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId !== undefined);
+
+  if (!hasPancakeInboxToken) {
+    missing.push("PANCAKE_API_USER_ACCESS_TOKEN hoặc PANCAKE_API_PAGE_ACCESS_TOKEN để xây Unified Inbox thật.");
+  }
+
+  if (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId === undefined) {
+    missing.push("PANCAKE_API_PAGE_ID để dùng cùng PANCAKE_API_PAGE_ACCESS_TOKEN.");
+  }
+
   missing.push("Domain HTTPS public để cấu hình Pancake/Botcake webhook.");
   missing.push("Webhook sample thật từ Pancake messaging để map payload production.");
   missing.push("PSID hoặc khách nội bộ để test gửi tin không ảnh hưởng khách thật.");
@@ -248,6 +450,30 @@ function extractArray(source: unknown, key: string): unknown[] {
   if (isRecord(source)) {
     const value = source[key];
     return Array.isArray(value) ? value : [];
+  }
+
+  return [];
+}
+
+function extractLikelyArray(source: unknown, keys: readonly string[]): unknown[] {
+  if (Array.isArray(source)) {
+    return source;
+  }
+
+  if (!isRecord(source)) {
+    return [];
+  }
+
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    const nested = extractLikelyArray(value, keys);
+    if (nested.length > 0) {
+      return nested;
+    }
   }
 
   return [];

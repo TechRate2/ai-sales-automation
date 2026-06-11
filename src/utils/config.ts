@@ -9,6 +9,7 @@ export interface AppConfig {
   logLevel: LogLevel;
   port: number;
   botcake: BotcakeConfig;
+  pancakeApi: PancakeApiConfig;
   pancakePos: PancakePosConfig;
 }
 
@@ -24,6 +25,19 @@ export interface BotcakeConfig {
 }
 
 export type BotcakePageIdSource = "env" | "token" | "missing";
+
+export interface PancakeApiConfig {
+  userBaseUrl: string;
+  publicBaseUrl: string;
+  publicV2BaseUrl: string;
+  userAccessToken: string | undefined;
+  pageAccessToken: string | undefined;
+  pageId: string | undefined;
+  webhookSecret: string | undefined;
+  timeoutMs: number;
+  retryMaxAttempts: number;
+  retryBaseDelayMs: number;
+}
 
 export interface PancakePosConfig {
   apiBaseUrl: string;
@@ -46,6 +60,9 @@ export interface ConfigIssue {
 type EnvRecord = Record<string, string | undefined>;
 
 const DEFAULT_BOTCAKE_API_BASE_URL = "https://botcake.io/api/public_api/v1";
+const DEFAULT_PANCAKE_API_USER_BASE_URL = "https://pages.fm/api/v1";
+const DEFAULT_PANCAKE_API_PUBLIC_BASE_URL = "https://pages.fm/api/public_api/v1";
+const DEFAULT_PANCAKE_API_PUBLIC_V2_BASE_URL = "https://pages.fm/api/public_api/v2";
 const DEFAULT_PANCAKE_POS_API_BASE_URL = "https://pos.pages.fm/api/v1";
 
 export function loadConfig(env: EnvRecord = loadRuntimeEnv()): AppConfig {
@@ -67,6 +84,18 @@ export function loadConfig(env: EnvRecord = loadRuntimeEnv()): AppConfig {
       timeoutMs: parseNumber(env.BOTCAKE_DEFAULT_TIMEOUT_MS, 8000),
       retryMaxAttempts: parseNumber(env.BOTCAKE_RETRY_MAX_ATTEMPTS, 3),
       retryBaseDelayMs: parseNumber(env.BOTCAKE_RETRY_BASE_DELAY_MS, 300)
+    },
+    pancakeApi: {
+      userBaseUrl: optionalString(env.PANCAKE_API_USER_BASE_URL) ?? DEFAULT_PANCAKE_API_USER_BASE_URL,
+      publicBaseUrl: optionalString(env.PANCAKE_API_BASE_URL) ?? DEFAULT_PANCAKE_API_PUBLIC_BASE_URL,
+      publicV2BaseUrl: optionalString(env.PANCAKE_API_V2_BASE_URL) ?? DEFAULT_PANCAKE_API_PUBLIC_V2_BASE_URL,
+      userAccessToken: optionalString(env.PANCAKE_API_USER_ACCESS_TOKEN),
+      pageAccessToken: optionalString(env.PANCAKE_API_PAGE_ACCESS_TOKEN),
+      pageId: optionalString(env.PANCAKE_API_PAGE_ID),
+      webhookSecret: optionalString(env.PANCAKE_WEBHOOK_SECRET),
+      timeoutMs: parseNumber(env.PANCAKE_API_TIMEOUT_MS, 10000),
+      retryMaxAttempts: parseNumber(env.PANCAKE_API_RETRY_MAX_ATTEMPTS, 3),
+      retryBaseDelayMs: parseNumber(env.PANCAKE_API_RETRY_BASE_DELAY_MS, 500)
     },
     pancakePos: {
       apiBaseUrl: optionalString(env.PANCAKE_POS_API_BASE_URL) ?? DEFAULT_PANCAKE_POS_API_BASE_URL,
@@ -98,6 +127,14 @@ export function validateConfig(config: AppConfig): ConfigIssue[] {
     requireValue(issues, "BOTCAKE_API_TOKEN", config.botcake.apiToken);
     requireValue(issues, "PANCAKE_POS_API_KEY", config.pancakePos.apiKey);
     requireValue(issues, "PANCAKE_POS_SHOP_ID", config.pancakePos.shopId);
+
+    if (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId === undefined) {
+      issues.push({
+        level: "error",
+        key: "PANCAKE_API_PAGE_ID",
+        message: "PANCAKE_API_PAGE_ID is required when PANCAKE_API_PAGE_ACCESS_TOKEN is configured."
+      });
+    }
   }
 
   if (config.pancakePos.enableDraftOrderCreation) {

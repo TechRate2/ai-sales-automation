@@ -37,6 +37,11 @@ export async function createDoctorReport(config: AppConfig = loadConfig()): Prom
         : "Chưa có PANCAKE_POS_API_KEY/PANCAKE_POS_SHOP_ID. Hệ thống chưa thể đọc sản phẩm/tồn kho thật."
     },
     {
+      name: "Pancake Inbox credentials",
+      status: hasPancakeApiCredentials(config) ? "pass" : "warn",
+      message: createPancakeApiCredentialMessage(config)
+    },
+    {
       name: "Draft order safety",
       status: config.pancakePos.enableDraftOrderCreation ? "warn" : "pass",
       message: config.pancakePos.enableDraftOrderCreation
@@ -61,6 +66,27 @@ function createBotcakeCredentialMessage(config: AppConfig): string {
   }
 
   return "Đã có BOTCAKE_PAGE_ID và BOTCAKE_API_TOKEN.";
+}
+
+function createPancakeApiCredentialMessage(config: AppConfig): string {
+  if (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId !== undefined) {
+    return "Đã có PANCAKE_API_PAGE_ACCESS_TOKEN và PANCAKE_API_PAGE_ID để đọc Unified Inbox thật.";
+  }
+
+  if (config.pancakeApi.userAccessToken !== undefined) {
+    return "Đã có PANCAKE_API_USER_ACCESS_TOKEN để list page. Cần Page Access Token để đọc conversations/messages thật.";
+  }
+
+  if (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId === undefined) {
+    return "Đã có PANCAKE_API_PAGE_ACCESS_TOKEN nhưng thiếu PANCAKE_API_PAGE_ID.";
+  }
+
+  return "Chưa có PANCAKE_API_USER_ACCESS_TOKEN hoặc PANCAKE_API_PAGE_ACCESS_TOKEN. Unified Inbox chưa thể chạy thật.";
+}
+
+function hasPancakeApiCredentials(config: AppConfig): boolean {
+  return config.pancakeApi.userAccessToken !== undefined
+    || (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId !== undefined);
 }
 
 export function formatDoctorReport(report: DoctorReport): string {

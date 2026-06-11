@@ -15,6 +15,8 @@
   --red-soft: #fdecea;
   --blue: #28648f;
   --blue-soft: #e8f2f8;
+  --teal: #08726b;
+  --teal-soft: #e2f4f1;
   --shadow: 0 18px 45px rgba(23, 32, 29, 0.08);
   --radius: 8px;
 }
@@ -400,7 +402,7 @@ h3 {
 .integration-grid,
 .guide-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -442,6 +444,11 @@ h3 {
 .pos-mark {
   background: var(--green-soft);
   color: var(--green);
+}
+
+.inbox-mark {
+  background: var(--teal-soft);
+  color: var(--teal);
 }
 
 .draft-mark {
@@ -533,7 +540,7 @@ h3 {
 
 .live-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 16px;
 }

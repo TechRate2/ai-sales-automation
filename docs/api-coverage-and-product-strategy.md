@@ -88,12 +88,12 @@ Lý do: các API này có rủi ro vận hành cao, dễ ảnh hưởng kho/đơ
 
 | Endpoint | Trạng thái trong source | Đang dùng thật? | Mục đích |
 | --- | --- | --- | --- |
-| `GET /pages` | Đã tài liệu hóa | Chưa | Tự list page bằng User Access Token |
-| `POST /pages/{page_id}/generate_page_access_token` | Đã tài liệu hóa | Chưa | Tạo Page Access Token |
-| `GET /pages/{page_id}/conversations` | Đã tài liệu hóa | Chưa | Unified Inbox |
+| `GET /pages` | Đã code `PancakeApiClient.listPages` | Chờ token thật | Tự list page bằng User Access Token |
+| `POST /pages/{page_id}/generate_page_access_token` | Chỉ tài liệu hóa, chưa code action ghi | Chưa | Tạo Page Access Token, cần xác nhận trước khi dùng |
+| `GET /pages/{page_id}/conversations` | Đã code `PancakeApiClient.listConversations` | Chờ Page Access Token thật | Unified Inbox |
 | `GET /pages/{page_id}/conversations/{conversation_id}/messages` | Đã tài liệu hóa | Chưa | Lịch sử chat |
 | `POST /pages/{page_id}/conversations/{conversation_id}/messages` | Đã tài liệu hóa | Chưa | Gửi tin qua Pancake API |
-| `GET /pages/{page_id}/tags` | Đã tài liệu hóa | Chưa | Tag Pancake |
+| `GET /pages/{page_id}/tags` | Đã code `PancakeApiClient.listTags` | Chờ Page Access Token thật | Tag Pancake |
 | `POST /pages/{page_id}/conversations/{conversation_id}/tags` | Đã tài liệu hóa | Chưa | Gắn tag hội thoại |
 | `POST /pages/{page_id}/conversations/{conversation_id}/assign` | Đã tài liệu hóa | Chưa | Assign sale |
 | `GET /pages/{page_id}/page_customers` | Đã tài liệu hóa | Chưa | Customer 360 |

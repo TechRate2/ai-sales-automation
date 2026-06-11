@@ -31,10 +31,14 @@ const elements = {
   readinessList: document.getElementById("readiness-list"),
   safetyBadge: document.getElementById("safety-badge"),
   botcakeState: document.getElementById("botcake-state"),
+  pancakeApiState: document.getElementById("pancake-api-state"),
   posState: document.getElementById("pos-state"),
   draftState: document.getElementById("draft-state"),
   liveBotcakeSummary: document.getElementById("live-botcake-summary"),
   liveBotcakeTags: document.getElementById("live-botcake-tags"),
+  livePancakeApiSummary: document.getElementById("live-pancake-api-summary"),
+  livePancakeApiItems: document.getElementById("live-pancake-api-items"),
+  livePancakeTags: document.getElementById("live-pancake-tags"),
   livePosSummary: document.getElementById("live-pos-summary"),
   liveWarehouses: document.getElementById("live-warehouses"),
   liveProductCount: document.getElementById("live-product-count"),
@@ -90,6 +94,7 @@ function renderReadiness(payload) {
   }
 
   renderServiceState(elements.botcakeState, payload.services?.botcake);
+  renderServiceState(elements.pancakeApiState, payload.services?.pancakeApi);
   renderServiceState(elements.posState, payload.services?.pancakePos);
   renderServiceState(elements.draftState, payload.services?.draftOrder);
 }
@@ -125,6 +130,7 @@ function renderServiceState(target, service) {
 
 function renderLiveIntegrations(payload) {
   renderLiveBotcake(payload.botcake);
+  renderLivePancakeApi(payload.pancakeApi);
   renderLivePos(payload.pancakePos);
   renderNextRequiredInputs(payload.nextRequiredInputs ?? []);
 }
@@ -145,6 +151,54 @@ function renderLiveBotcake(botcake) {
     chip.className = "chip";
     chip.textContent = tag.name;
     elements.liveBotcakeTags.appendChild(chip);
+  }
+}
+
+function renderLivePancakeApi(pancakeApi) {
+  const tone = statusTone[pancakeApi?.status] ?? statusTone.warn;
+  const modeLabel = renderPancakeApiMode(pancakeApi?.mode);
+  elements.livePancakeApiSummary.textContent = `${tone.label} · ${modeLabel} · ${pancakeApi?.message ?? "Chưa có dữ liệu"}`;
+  elements.livePancakeApiItems.innerHTML = "";
+  elements.livePancakeTags.innerHTML = "";
+
+  const pages = pancakeApi?.samplePages ?? [];
+  const conversations = pancakeApi?.sampleConversations ?? [];
+
+  for (const page of pages) {
+    const row = document.createElement("div");
+    row.className = "compact-row";
+    const title = document.createElement("strong");
+    title.textContent = page.name;
+    const meta = document.createElement("span");
+    meta.textContent = [page.id, page.platform].filter(Boolean).join(" · ");
+    row.append(title, meta);
+    elements.livePancakeApiItems.appendChild(row);
+  }
+
+  for (const conversation of conversations) {
+    const row = document.createElement("div");
+    row.className = "compact-row";
+    const title = document.createElement("strong");
+    title.textContent = conversation.customerName || conversation.id;
+    const meta = document.createElement("span");
+    meta.textContent = [
+      conversation.type,
+      conversation.updatedAt ? `Cập nhật ${conversation.updatedAt}` : undefined,
+      conversation.lastMessageAt ? `Tin cuối ${conversation.lastMessageAt}` : undefined
+    ].filter(Boolean).join(" · ");
+    row.append(title, meta);
+    elements.livePancakeApiItems.appendChild(row);
+  }
+
+  if (pages.length === 0 && conversations.length === 0) {
+    elements.livePancakeApiItems.appendChild(createMutedLine("Chưa đọc được page hoặc hội thoại từ Pancake API."));
+  }
+
+  for (const tag of pancakeApi?.sampleTags ?? []) {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = tag.name;
+    elements.livePancakeTags.appendChild(chip);
   }
 }
 
@@ -226,9 +280,12 @@ function renderNextRequiredInputs(items) {
 
 function renderLiveLoading() {
   elements.liveBotcakeSummary.textContent = "Đang đọc Botcake thật";
+  elements.livePancakeApiSummary.textContent = "Đang đọc Pancake Inbox";
   elements.livePosSummary.textContent = "Đang đọc Pancake POS thật";
   elements.liveProductCount.textContent = "Đang đồng bộ";
   elements.liveBotcakeTags.innerHTML = "";
+  elements.livePancakeApiItems.innerHTML = "";
+  elements.livePancakeTags.innerHTML = "";
   elements.liveWarehouses.innerHTML = "";
   elements.liveProductsTable.innerHTML = "";
   elements.nextRequiredInputs.innerHTML = "";
@@ -237,6 +294,7 @@ function renderLiveLoading() {
 function renderLiveError(error) {
   const message = error instanceof Error ? error.message : "Không đọc được API live.";
   elements.liveBotcakeSummary.textContent = message;
+  elements.livePancakeApiSummary.textContent = message;
   elements.livePosSummary.textContent = message;
   elements.liveProductCount.textContent = "Lỗi";
 }
@@ -260,6 +318,18 @@ function formatMoney(value) {
     currency: "VND",
     maximumFractionDigits: 0
   }).format(value);
+}
+
+function renderPancakeApiMode(mode) {
+  switch (mode) {
+    case "page_token":
+      return "Page token";
+    case "user_token":
+      return "User token";
+    case "not_configured":
+    default:
+      return "Chưa cấu hình";
+  }
 }
 
 function renderInventoryStatus(status) {

@@ -21,6 +21,7 @@ interface ReadinessPayload {
   items: ReadinessItem[];
   services: {
     botcake: ServiceStatus;
+    pancakeApi: ServiceStatus;
     pancakePos: ServiceStatus;
     draftOrder: ServiceStatus;
   };
@@ -121,6 +122,12 @@ async function buildReadinessPayload(config: AppConfig): Promise<ReadinessPayloa
         : "Chưa có PANCAKE_POS_API_KEY/PANCAKE_POS_SHOP_ID."
     },
     {
+      key: "pancake_api_credentials",
+      label: "Pancake Inbox credentials",
+      status: hasPancakeApiCredentials(config) ? "pass" : "warn",
+      message: createPancakeApiCredentialMessage(config)
+    },
+    {
       key: "draft_order_safety",
       label: "Draft order safety",
       status: config.pancakePos.enableDraftOrderCreation ? "warn" : "pass",
@@ -145,6 +152,11 @@ async function buildReadinessPayload(config: AppConfig): Promise<ReadinessPayloa
         status: hasBotcakeCredentials(config) ? "pass" : "warn",
         label: "Botcake",
         message: createBotcakeServiceMessage(config)
+      },
+      pancakeApi: {
+        status: hasPancakeApiCredentials(config) ? "pass" : "warn",
+        label: "Pancake Inbox",
+        message: createPancakeApiServiceMessage(config)
       },
       pancakePos: {
         status: hasPancakePosCredentials(config) ? "pass" : "warn",
@@ -180,8 +192,41 @@ function createBotcakeServiceMessage(config: AppConfig): string {
   return config.botcake.pageIdSource === "token" ? "Ready, page id inferred" : "Credentials ready";
 }
 
+function createPancakeApiCredentialMessage(config: AppConfig): string {
+  if (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId !== undefined) {
+    return "Đã có Page Access Token và Page ID để đọc Pancake Inbox thật.";
+  }
+
+  if (config.pancakeApi.userAccessToken !== undefined) {
+    return "Đã có User Access Token để list page Pancake. Cần thêm Page Access Token để đọc inbox thật.";
+  }
+
+  if (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId === undefined) {
+    return "Đã có Page Access Token nhưng thiếu PANCAKE_API_PAGE_ID.";
+  }
+
+  return "Chưa có Pancake API token cho Unified Inbox.";
+}
+
+function createPancakeApiServiceMessage(config: AppConfig): string {
+  if (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId !== undefined) {
+    return "Ready for conversations/messages/tags";
+  }
+
+  if (config.pancakeApi.userAccessToken !== undefined) {
+    return "Ready for page discovery";
+  }
+
+  return "Needs page or user access token";
+}
+
 function hasBotcakeCredentials(config: AppConfig): boolean {
   return config.botcake.pageId !== undefined && config.botcake.apiToken !== undefined;
+}
+
+function hasPancakeApiCredentials(config: AppConfig): boolean {
+  return config.pancakeApi.userAccessToken !== undefined
+    || (config.pancakeApi.pageAccessToken !== undefined && config.pancakeApi.pageId !== undefined);
 }
 
 function hasPancakePosCredentials(config: AppConfig): boolean {
